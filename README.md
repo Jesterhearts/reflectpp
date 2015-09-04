@@ -6,6 +6,16 @@ It's useful to be able to treat objects as dictionaries for many reasons. A
 prime example being serialization. This library provides a relatively efficient
 way of doing so, allowing you to write code like this:
 ```
+struct MyCalc {
+    int add(int, int);
+    int sub(int, int);
+    int mul(int, int);
+    int div(int, int);
+};
+
+REFLECT_ENABLE(MyCalc, add, sub, mul, div)
+
+//...
 MyCalc mycalc;
 
 auto reflected = reflect::reflect(mycalc);
