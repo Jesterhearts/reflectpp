@@ -74,7 +74,7 @@ struct member_typemap_impl<
         return get_member(name, std::strlen(name), Members());
     }
 
-    ReflectedType operator[](const std::string& name) {
+    ReflectedType& operator[](const std::string& name) {
         return get_member(name.c_str(), name.length(), Members());
         return (*this)();
     }

@@ -78,6 +78,17 @@ struct reflected_member {
             std::forward<Args>(args)...
         };
     }
+
+private:
+    constexpr reflected_member(const reflected_member&) = default;
+    constexpr reflected_member(reflected_member&&)      = default;
+
+    template<typename, typename, typename>
+    friend struct member_assigner;
+
+    template<typename, typename, typename, typename...>
+    friend struct member_invoker;
+;
 };
 
 }
