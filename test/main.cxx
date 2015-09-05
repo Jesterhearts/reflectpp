@@ -86,7 +86,7 @@ int main() {
     int a = reflected["i"];
     assert(a == 10);
 
-    char d = reflected["i"];
+    char c = reflected["i"];
 
     reflected["Bar"]();
     reflected["Bar"].invoke<void>();
@@ -102,17 +102,11 @@ int main() {
 
     int i = reflected["Baz"]();
     assert(i == 10);
-
-    try {
-        reflected["Baz"]();
-        assert(false);
-    }
-    catch (const reflect::bad_member_access& e) {
-        std::cout << "caught: " << e.what() << std::endl;
-    }
+    reflected["Baz"]();
 
     int x = reflected["Baz2"](42);
     assert(x == 42);
+    double d = reflected["Baz2"](42.0);
 
     try {
         int x = reflected["Bar"]();

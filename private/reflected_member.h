@@ -56,9 +56,11 @@ struct reflected_member {
         );
 
         if (TypeInfo::value && TypeInfo::index == tag) {
-            return static_cast<
-                member_invoker<Class, ThisType, ReturnType, Args&&...>&
-            >(*this)(std::forward<Args>(args)...);
+            return static_cast<ReturnType>(
+                static_cast<
+                    member_invoker<Class, ThisType, ReturnType, Args&&...>&
+                >(*this)(std::forward<Args>(args)...)
+            );
         }
 
         return invoke<ReturnType>(Options(), std::forward<Args>(args)...);
@@ -95,9 +97,11 @@ private:
         using TypeInfo = TypeInfo<Class, OptionRT(OptionArgs...)>;
 
         if (TypeInfo::index == tag) {
-            return static_cast<
-                member_invoker<Class, ThisType, OptionRT, OptionArgs...>&
-            >(*this)(std::forward<Args>(args)...);
+            return static_cast<ReturnType>(
+                static_cast<
+                    member_invoker<Class, ThisType, OptionRT, OptionArgs...>&
+                >(*this)(static_cast<OptionArgs>(std::forward<Args>(args))...)
+            );
         }
 
         return invoke<ReturnType>(

@@ -71,13 +71,6 @@ struct reflected_member_call<Class, ReflectedType> {
 
     template<typename ReturnType>
     operator ReturnType() {
-        using Type = ReturnType();
-        using TypeInfo = TypeInfo<Class, Type>;
-        static_assert(
-            TypeInfo::value,
-            "Requested type is not a member type of this class"
-        );
-
         called = true;
         return invoke<ReturnType>();
     }
@@ -91,18 +84,7 @@ struct reflected_member_call<Class, ReflectedType> {
 private:
     template<typename ReturnType>
     ReturnType invoke() {
-        using Type = ReturnType();
-        using TypeInfo = TypeInfo<Class, Type>;
-
-        if (!TypeInfo::value || TypeInfo::index != fnptr->tag) {
-            throw bad_member_access{
-                "Attempting to call nonexistent function"
-            };
-        }
-
-        return static_cast<
-            member_invoker<Class, ReflectedType, ReturnType>&
-        >(*fnptr)();
+        return fnptr->invoke<ReturnType>();
     }
 };
 
