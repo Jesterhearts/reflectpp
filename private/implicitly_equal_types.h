@@ -42,6 +42,14 @@ struct implicitly_equal<ReturnType1(Args1...), ReturnType2(Args2...), true>
         std::is_convertible<ReturnType1, ReturnType2>::value>
 {};
 
+template<typename Type1, typename Type2>
+struct implicitly_equal<Type1, Type2, true>
+    : implicitly_equal<
+        typelist<>,
+        typelist<>,
+        std::is_convertible<Type1, Type2>::value>
+{};
+
 }
 }
 

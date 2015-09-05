@@ -18,6 +18,9 @@ using TypeInfo = find_duplicate_type<
 template<typename Class>
 using FnTypes = typename class_reflection_info<Class>::TypeInfo::FnTypes;
 
+template<typename Class>
+using ObjTypes = typename class_reflection_info<Class>::TypeInfo::ObjTypes;
+
 }
 }
 

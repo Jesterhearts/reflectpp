@@ -49,45 +49,58 @@ template<typename... _list> using typeset = decltype(
 );
 
 ///////////////////////////////////////////////////////////////////////////////
-template<typename... filtered>
-constexpr auto filter_fn_types(typelist<>, typelist<filtered...>, bool) {
+template<template<typename> class filter, typename... filtered>
+constexpr auto filter_types(typelist<>, typelist<filtered...>, char) {
     return typelist<filtered...>();
 }
 
-template<typename candidate, typename... candidates, typename... filtered>
-constexpr auto filter_fn_types(
+template<
+    template<typename> class filter,
+    typename candidate,
+    typename... candidates,
+    typename... filtered>
+constexpr auto filter_types(
     typelist<candidate, candidates...>,
     typelist<filtered...>,
-    std::enable_if_t<std::is_function<candidate>::value, bool>)
+    std::enable_if_t<filter<candidate>::value, char>)
 {
-    return filter_fn_types(
+    return filter_types<filter>(
         typelist<candidates...>(),
         typelist<filtered..., candidate>(),
-        true
+        '\0'
     );
 }
 
-template<typename candidate, typename... candidates, typename... filtered>
-constexpr auto filter_fn_types(
+template<
+    template<typename> class filter,
+    typename candidate,
+    typename... candidates,
+    typename... filtered>
+constexpr auto filter_types(
     typelist<candidate, candidates...>,
     typelist<filtered...>,
-    std::enable_if_t<!std::is_function<candidate>::value, bool>)
+    std::enable_if_t<!filter<candidate>::value, char>)
 {
-    return filter_fn_types(
+    return filter_types<filter>(
         typelist<candidates...>(),
         typelist<filtered...>(),
-        true
+        '\0'
     );
 }
 
+///////////////////////////////////////////////////////////////////////////////
 template<typename... list>
 constexpr auto filter_fn_types(typelist<list...>) {
-    return filter_fn_types(typelist<list...>(), typelist<>(), true);
+    return filter_types<std::is_function>(
+        typelist<list...>(),
+        typelist<>(),
+        '\0'
+    );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 template<typename FnType, typename... filtered>
-constexpr auto filter_compatible_fns(
+constexpr auto filter_compatible_types(
     typelist<>,
     typelist<filtered...>,
     bool)
@@ -100,12 +113,12 @@ template<
     typename candidate,
     typename... candidates,
     typename... filtered>
-constexpr auto filter_compatible_fns(
+constexpr auto filter_compatible_types(
     typelist<candidate, candidates...>,
     typelist<filtered...>,
     std::enable_if_t<implicitly_equal<FnType, candidate>::value, bool>)
 {
-    return filter_compatible_fns<FnType>(
+    return filter_compatible_types<FnType>(
         typelist<candidates...>(),
         typelist<filtered..., candidate>(),
         true
@@ -117,12 +130,12 @@ template<
     typename candidate,
     typename... candidates,
     typename... filtered>
-constexpr auto filter_compatible_fns(
+constexpr auto filter_compatible_types(
     typelist<candidate, candidates...>,
     typelist<filtered...>,
     std::enable_if_t<!implicitly_equal<FnType, candidate>::value, bool>)
 {
-    return filter_compatible_fns<FnType>(
+    return filter_compatible_types<FnType>(
         typelist<candidates...>(),
         typelist<filtered...>(),
         true
@@ -130,12 +143,18 @@ constexpr auto filter_compatible_fns(
 }
 
 template<typename FnType, typename... list>
-constexpr auto filter_compatible_fns(typelist<list...>) {
-    return filter_compatible_fns<FnType>(
+constexpr auto filter_compatible_types(typelist<list...>) {
+    return filter_compatible_types<FnType>(
         typelist<list...>(),
         typelist<>(),
         true
     );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+template<typename... list>
+constexpr auto filter_obj_types(typelist<list...>) {
+    return filter_types<std::is_object>(typelist<list...>(), typelist<>(), '\0');
 }
 
 }

@@ -29,26 +29,23 @@ struct reflected_member {
             };
         }
 
-        return *static_cast<member_assigner<Class, ThisType, Type>*>(this);
+        return static_cast<member_assigner<Class, ThisType, Type>&>(*this);
     }
 
     template<typename Type>
-    Type& operator=(Type&& value) {
+    void operator=(Type&& arg) {
         using TypeInfo = TypeInfo<Class, Type>;
-        static_assert(
-            TypeInfo::value,
-            "Requested type is not a member type of this class"
+        using Options  = decltype(
+            filter_compatible_types<Type>(ObjTypes<Class>())
         );
 
-        if (TypeInfo::index != tag) {
-            throw bad_member_access{
-                "Attempting to assign wrong type to member"
-            };
+        if (TypeInfo::value && TypeInfo::index == tag) {
+            return static_cast<member_assigner<Class, ThisType, Type>&>(
+                *this
+            ) = std::forward<Type>(arg);
         }
 
-        return *static_cast<member_assigner<Class, ThisType, Type>*>(
-            this
-        ) = value;
+        return assign(Options(), std::forward<Type>(arg));
     }
 
     template<typename ReturnType, typename... Args>
@@ -56,7 +53,7 @@ struct reflected_member {
         using Type     = ReturnType(Args&&...);
         using TypeInfo = TypeInfo<Class, Type>;
         using Options  = decltype(
-            filter_compatible_fns<Type>(FnTypes<Class>())
+            filter_compatible_types<Type>(FnTypes<Class>())
         );
 
         if (TypeInfo::value && TypeInfo::index == tag) {
@@ -79,15 +76,6 @@ struct reflected_member {
     }
 
 private:
-    constexpr reflected_member(const reflected_member&) = default;
-    constexpr reflected_member(reflected_member&&)      = default;
-
-    template<typename, typename, typename>
-    friend struct member_assigner;
-
-    template<typename, typename, typename, typename...>
-    friend struct member_invoker;
-
     template<typename ReturnType, typename... Args>
     ReturnType invoke(typelist<>, Args&&... args) {
         throw bad_member_access{
@@ -119,6 +107,35 @@ private:
         );
     }
 
+    template<typename Type>
+    void assign(typelist<>, Type&& arg) {
+        throw bad_member_access{
+            "Attempting to assign wrong type to member"
+        };
+    }
+
+    template<typename Type, typename Option, typename... Options>
+    void assign(typelist<Option, Options...>, Type&& arg)
+    {
+        using TypeInfo = TypeInfo<Class, Option>;
+
+        if (TypeInfo::index == tag) {
+            return static_cast<member_assigner<Class, ThisType, Option>&>(
+                *this
+            ) = std::forward<Type>(arg);
+        }
+
+        return assign(typelist<Options...>(), std::forward<Type>(arg));
+    }
+
+    constexpr reflected_member(const reflected_member&) = default;
+    constexpr reflected_member(reflected_member&&)      = default;
+
+    template<typename, typename, typename, typename>
+    friend struct member_assigner;
+
+    template<typename, typename, typename, typename...>
+    friend struct member_invoker;
 };
 
 }

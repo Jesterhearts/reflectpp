@@ -22,28 +22,22 @@ struct member<member_info<MemberType Class::*, Member>, TypeRepr>
 {
     using Type = MemberType;
 
-    operator Type&() {
+    operator Type&() override {
         return static_cast<reflected_instance<Class>*>(
             static_cast<typename class_reflection_info<Class>::TypeInfo*>(this)
         )->instance.*Member;
     }
 
-    Type& operator=(const Type& type) override {
-        return static_cast<reflected_instance<Class>*>(
+    void operator=(const Type& type) {
+        static_cast<reflected_instance<Class>*>(
             static_cast<typename class_reflection_info<Class>::TypeInfo*>(this)
         )->instance.*Member = type;
     }
 
-    Type& operator=(Type& type) override {
-        return static_cast<reflected_instance<Class>*>(
+    void operator=(Type&& type) {
+        static_cast<reflected_instance<Class>*>(
             static_cast<typename class_reflection_info<Class>::TypeInfo*>(this)
-        )->instance.*Member = type;
-    }
-
-    Type& operator=(Type&& type) override {
-        return static_cast<reflected_instance<Class>*>(
-            static_cast<typename class_reflection_info<Class>::TypeInfo*>(this)
-        )->instance.*Member = type;
+        )->instance.*Member = std::move(type);
     }
 };
 

@@ -15,12 +15,16 @@ struct NonCopyable {
 
     NonCopyable(const NonCopyable&) = delete;
     NonCopyable(NonCopyable&&)      = default;
+
+    NonCopyable& operator=(NonCopyable&&)      = default;
+    NonCopyable& operator=(const NonCopyable&) = delete;
 };
 
 struct Foo {
     int i;
     bool b;
     char c;
+    NonCopyable ncmem;
 
     void Bar() {
         std::cout << "Bar called" << std::endl;
@@ -46,12 +50,12 @@ struct Foo {
     }
 };
 
-REFLECT_ENABLE(Foo, i, b, c, Bar, Baz, Baz2, Perf, NC)
+REFLECT_ENABLE(Foo, i, b, c, ncmem, Bar, Baz, Baz2, Perf, NC)
 
 static_assert(reflect::detail::class_reflection_info<Foo>::TypeInfo::get_type_id<int>() == 0, "");
 static_assert(reflect::detail::class_reflection_info<Foo>::TypeInfo::get_type_id<bool>() == 1, "");
 static_assert(reflect::detail::class_reflection_info<Foo>::TypeInfo::get_type_id<char>() == 2, "");
-static_assert(reflect::detail::class_reflection_info<Foo>::TypeInfo::get_type_id<void()>() == 3, "");
+static_assert(reflect::detail::class_reflection_info<Foo>::TypeInfo::get_type_id<void()>() == 4, "");
 
 static_assert(reflect::detail::find_duplicate_type<bool, reflect::detail::typelist<bool>>::value, "");
 static_assert(reflect::detail::find_duplicate_type<bool, reflect::detail::typelist<int, bool>>::value, "");
@@ -73,15 +77,11 @@ int main() {
 
     auto reflected = reflect::reflect(f);
 
+    reflected["i"] = 'c';
+
     reflected["i"] = 10;
     assert(f.i == 10);
     std::cout << f.i << std::endl;
-    try {
-        reflected["i"] = 'c';
-    }
-    catch (const reflect::bad_member_access& e) {
-        std::cout << "caught: " << e.what() << std::endl;
-    }
 
     int a = reflected["i"];
     assert(a == 10);
@@ -128,4 +128,7 @@ int main() {
 
     NonCopyable nc{ 10 };
     reflected["NC"](std::move(nc));
+
+    NonCopyable nc2{ 10 };
+    reflected["ncmem"] = std::move(nc);
 }

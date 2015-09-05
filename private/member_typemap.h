@@ -42,6 +42,7 @@ struct member_typemap_impl<
     using Members       = member_typelist<members...>;
     using Types         = member_underlyingtype_set<underlying_members...>;
     using FnTypes       = decltype(filter_fn_types(Types()));
+    using ObjTypes      = decltype(filter_obj_types(Types()));
     using Indexes       = index_list<indexes...>;
     using type_repr     = type_repr_t<underlying_members...>;
     using ReflectedType = reflected_member<Class, type_repr>;
