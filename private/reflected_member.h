@@ -53,7 +53,7 @@ struct reflected_member {
 
     template<typename ReturnType, typename... Args>
     ReturnType invoke(Args&&... args) {
-        using Type = ReturnType(*)(Args...);
+        using Type = ReturnType(*)(Args&&...);
         using TypeInfo = TypeInfo<Class, Type>;
         static_assert(
             TypeInfo::value,
@@ -67,13 +67,13 @@ struct reflected_member {
         }
 
         return static_cast<
-            member_invoker<Class, ThisType, ReturnType, Args...>&
+            member_invoker<Class, ThisType, ReturnType, Args&&...>&
         >(*this)(std::forward<Args>(args)...);
     }
 
     template<typename... Args>
-    reflected_member_call<Class, ThisType, Args...> operator()(Args... args) {
-        return reflected_member_call<Class, ThisType, Args...>{
+    reflected_member_call<Class, ThisType, Args&&...> operator()(Args&&... args) {
+        return reflected_member_call<Class, ThisType, Args&&...>{
             this,
             std::forward<Args>(args)...
         };
@@ -88,7 +88,7 @@ private:
 
     template<typename, typename, typename, typename...>
     friend struct member_invoker;
-;
+
 };
 
 }

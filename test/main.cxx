@@ -3,6 +3,17 @@
 
 #include "reflectpp/reflect.h"
 
+struct NC {
+    int m;
+
+    NC(const NC&) = delete;
+    NC(NC&&) = default;
+};
+
+void NcByVal(NC nc) {
+
+}
+
 struct Foo {
     int i;
     bool b;
@@ -22,9 +33,13 @@ struct Foo {
         std::cout << "Baz2 called" << std::endl;
         return x;
     }
+
+    void Nc(NC&& n) {
+        std::cout << "Nc called" << std::endl;
+    }
 };
 
-REFLECT_ENABLE(Foo, i, b, c, Bar, Baz, Baz2)
+REFLECT_ENABLE(Foo, i, b, c, Bar, Baz, Baz2, Nc)
 
 static_assert(reflect::detail::class_reflection_info<Foo>::TypeInfo::get_type_id<int>() == 0, "");
 static_assert(reflect::detail::class_reflection_info<Foo>::TypeInfo::get_type_id<bool>() == 1, "");
@@ -92,8 +107,9 @@ int main() {
         std::cout << "caught: " << e.what() << std::endl;
     }
 
-    int x = reflected["Baz2"](42);
-    assert(x == 42);
+    //i = 42;
+    //int x = reflected["Baz2"](i);
+    //assert(x == 42);
 
     try {
         int x = reflected["Bar"]();
@@ -101,4 +117,6 @@ int main() {
     catch (const reflect::bad_member_access& e) {
         std::cout << "caught: " << e.what() << std::endl;
     }
+
+    reflected["Nc"](std::move(NC{10}));
 }

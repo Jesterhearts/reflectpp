@@ -17,14 +17,14 @@ struct reflected_member_call {
     bool                called;
 
     template<typename... _Args>
-    reflected_member_call(ReflectedType* fnptr, _Args... args) :
+    reflected_member_call(ReflectedType* fnptr, _Args&&... args) :
         params{std::forward<Args>(args)...},
         fnptr(fnptr),
         called(false)
     {}
 
     reflected_member_call(reflected_member_call&& other) :
-        params(other.params),
+        params(std::move(other.params)),
         fnptr(other.fnptr),
         called(false)
     {
@@ -33,28 +33,24 @@ struct reflected_member_call {
 
     template<typename ReturnType>
     operator ReturnType() {
-        using Type = ReturnType(*)();
-        using TypeInfo = TypeInfo<Class, Type>;
-        static_assert(
-            TypeInfo::value,
-            "Requested type is not a member type of this class"
-        );
-
         called = true;
-        return invoke<ReturnType>(number_list_t<sizeof...(Args)>());
+        return invoke_perfect<ReturnType>(number_list_t<sizeof...(Args)>());
     }
 
     ~reflected_member_call() noexcept(false) {
         if(called) return;
         called = true;
-        invoke<void>(number_list_t<sizeof...(Args)>());
+        invoke_perfect<void>(number_list_t<sizeof...(Args)>());
     }
 
 private:
     template<typename ReturnType, size_t... ParamNum>
-    ReturnType invoke(number_list<ParamNum...>) {
+    ReturnType invoke_perfect(number_list<ParamNum...>) {
         using Type = ReturnType(*)(Args...);
         using TypeInfo = TypeInfo<Class, Type>;
+
+        const auto v = TypeInfo::value;
+        const auto t = TypeInfo::index;
 
         if (!TypeInfo::value || TypeInfo::index != fnptr->tag) {
             throw bad_member_access{
@@ -64,7 +60,7 @@ private:
 
         return static_cast<
             member_invoker<Class, ReflectedType, ReturnType, Args...>&
-        >(*fnptr)(std::get<ParamNum>(params)...);
+        >(*fnptr)(std::get<ParamNum>(std::move(params))...);
     }
 };
 
@@ -73,8 +69,7 @@ struct reflected_member_call<Class, ReflectedType> {
     ReflectedType*      fnptr;
     bool                called;
 
-    template<typename... _Args>
-    reflected_member_call(ReflectedType* fnptr, _Args... args) :
+    reflected_member_call(ReflectedType* fnptr) :
         fnptr(fnptr),
         called(false)
     {}
