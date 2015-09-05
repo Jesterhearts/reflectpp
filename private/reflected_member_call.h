@@ -25,14 +25,6 @@ struct reflected_member_call {
         called(false)
     {}
 
-    reflected_member_call(reflected_member_call&& other) :
-        params(std::move(other.params)),
-        fnptr(other.fnptr),
-        called(false)
-    {
-        other.called = true;
-    }
-
     template<typename ReturnType>
     operator ReturnType() {
         called = true;
@@ -46,12 +38,26 @@ struct reflected_member_call {
     }
 
 private:
+    template<typename, typename> friend struct reflected_member;
+
+    reflected_member_call(reflected_member_call&& other) :
+        params(std::move(other.params)),
+        fnptr(other.fnptr),
+        called(false)
+    {
+        other.called = true;
+    }
+
     template<typename ReturnType, size_t... ParamNum>
     ReturnType invoke(number_list<ParamNum...>) {
         return fnptr->invoke<ReturnType>(
             std::get<ParamNum>(std::move(params))...
         );
     }
+
+    reflected_member_call(const reflected_member_call&)            = delete;
+    reflected_member_call& operator=(const reflected_member_call&) = delete;
+    reflected_member_call& operator=(reflected_member_call&&)      = delete;
 };
 
 template<typename Class, typename ReflectedType>

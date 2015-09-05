@@ -70,10 +70,7 @@ struct reflected_member {
     reflected_member_call<Class, ThisType, Args&&...> operator()(
         Args&&... args)
     {
-        return reflected_member_call<Class, ThisType, Args&&...>{
-            this,
-            std::forward<Args>(args)...
-        };
+        return { this, std::forward<Args>(args)... };
     }
 
 private:

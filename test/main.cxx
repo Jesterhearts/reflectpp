@@ -163,4 +163,6 @@ int main() {
     std::cout << "reflected: \t" << delta_per_iter << " ns/iter" << std::endl;
 
     std::cout << tally << std::endl;
+
+    std::cin >> c;
 }
