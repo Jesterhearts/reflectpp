@@ -19,7 +19,7 @@ struct reflected_member {
     operator Type() {
         using TypeInfo = TypeInfo<Class, Type>;
         using Options = decltype(
-            filter_compatible_types<Type&>(ObjTypes<Class>())
+            filter_compatible_types<Type>(ObjTypes<Class>())
         );
 
         if (TypeInfo::value && TypeInfo::index == tag) {
