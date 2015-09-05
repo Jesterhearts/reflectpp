@@ -66,14 +66,16 @@ catch (const reflect::bad_member_access&) {
 - Requires a C++14 compliant compiler
     - Tested on VS2015 and mingw/g++ 4.9.2
     - VS2015 has a bug that prevents reflecting private members
+- No support for reflecting/accessing base class members
 - No support for reflecting const objects
 - No support for static members
 - No exposure of reflected members/names so they can be iterated over
 
 ## Future features
-1. Reflection of const objects, preserving const/mutableness of members
-2. Exposure of member info via iterators
-3. Support for static data/interacting with static data without needing a class
+1. Support for inheritance and reflecting base-objects
+2. Reflection of const objects, preserving const/mutableness of members
+3. Exposure of member info via iterators
+4. Support for static data/interacting with static data without needing a class
    instance
 
 See test/main.cxx for more example usages.
