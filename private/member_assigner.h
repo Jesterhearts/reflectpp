@@ -8,7 +8,7 @@ namespace detail {
 template<typename Class, typename Base, typename Type, typename = void>
 struct member_assigner : Base {
     member_assigner() : Base{ TypeInfo<Class, Type>::index } {}
-    virtual operator Type&() = 0;
+    virtual Type& get() = 0;
 };
 
 template<typename Class, typename Base, typename Type>
@@ -24,7 +24,7 @@ struct member_assigner<
 > : Base {
     member_assigner() : Base{ TypeInfo<Class, Type>::index } {}
 
-    virtual operator Type&() = 0;
+    virtual Type& get() = 0;
     virtual void operator=(const Type& type) = 0;
     virtual void operator=(Type&& type) = 0;
 };
@@ -42,7 +42,7 @@ struct member_assigner<
 > : Base {
     member_assigner() : Base{ TypeInfo<Class, Type>::index } {}
 
-    virtual operator Type&() = 0;
+    virtual Type& get() = 0;
     virtual void operator=(const Type& type) = 0;
 };
 
@@ -59,7 +59,7 @@ struct member_assigner<
 > : Base {
     member_assigner() : Base{ TypeInfo<Class, Type>::index } {}
 
-    virtual operator Type&() = 0;
+    virtual Type& get() = 0;
     virtual void operator=(Type&& type) = 0;
 };
 

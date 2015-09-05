@@ -22,7 +22,7 @@ struct member<member_info<MemberType Class::*, Member>, TypeRepr>
 {
     using Type = MemberType;
 
-    operator Type&() override {
+    Type& get() override {
         return static_cast<reflected_instance<Class>*>(
             static_cast<typename class_reflection_info<Class>::TypeInfo*>(this)
         )->instance.*Member;

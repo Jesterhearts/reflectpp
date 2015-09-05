@@ -16,20 +16,19 @@ struct reflected_member {
     const TypeRepr tag;
 
     template<typename Type>
-    operator Type&() {
+    operator Type() {
         using TypeInfo = TypeInfo<Class, Type>;
-        static_assert(
-            TypeInfo::value,
-            "Requested type is not a member type of this class"
+        using Options = decltype(
+            filter_compatible_types<Type&>(ObjTypes<Class>())
         );
 
-        if (TypeInfo::index != tag) {
-            throw bad_member_access{
-                "Attempting to read from wrong member type"
-            };
+        if (TypeInfo::value && TypeInfo::index == tag) {
+            return static_cast<member_assigner<Class, ThisType, Type>&>(
+                *this
+            ).get();
         }
 
-        return static_cast<member_assigner<Class, ThisType, Type>&>(*this);
+        return get<Type>(Options());
     }
 
     template<typename Type>
@@ -126,6 +125,27 @@ private:
         }
 
         return assign(typelist<Options...>(), std::forward<Type>(arg));
+    }
+
+    template<typename Type>
+    Type get(typelist<>) {
+        throw bad_member_access{
+            "Attempting to read from wrong member type"
+        };
+    }
+
+    template<typename Type, typename Option, typename... Options>
+    Type get(typelist<Option, Options...>)
+    {
+        using TypeInfo = TypeInfo<Class, Option>;
+
+        if (TypeInfo::index == tag) {
+            return static_cast<member_assigner<Class, ThisType, Option>&>(
+                *this
+            ).get();
+        }
+
+        return get<Type>(typelist<Options...>());
     }
 
     constexpr reflected_member(const reflected_member&) = default;

@@ -86,12 +86,7 @@ int main() {
     int a = reflected["i"];
     assert(a == 10);
 
-    try {
-        char d = reflected["i"];
-    }
-    catch (const reflect::bad_member_access& e) {
-        std::cout << "caught: " << e.what() << std::endl;
-    }
+    char d = reflected["i"];
 
     reflected["Bar"]();
     reflected["Bar"].invoke<void>();
@@ -99,6 +94,7 @@ int main() {
 
     try {
         reflected["i"]();
+        assert(false);
     }
     catch (const reflect::bad_member_access& e) {
         std::cout << "caught: " << e.what() << std::endl;
@@ -109,6 +105,7 @@ int main() {
 
     try {
         reflected["Baz"]();
+        assert(false);
     }
     catch (const reflect::bad_member_access& e) {
         std::cout << "caught: " << e.what() << std::endl;
@@ -119,6 +116,7 @@ int main() {
 
     try {
         int x = reflected["Bar"]();
+        assert(false);
     }
     catch (const reflect::bad_member_access& e) {
         std::cout << "caught: " << e.what() << std::endl;
