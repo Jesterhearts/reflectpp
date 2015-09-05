@@ -44,30 +44,36 @@ catch (const reflect::bad_member_access&) {
 ```
 
 ## Features
-- Full object reflection of members and functions
-- Relatively low runtime overhead
+- Full object reflection of members and functions.
+- Reflected members can be interacted with using `operator=` and `operator()`,
+  allowing them to be used as if they were an actual value.
+- Relatively low runtime overhead:
     - 1 byte per distinct member type, up to 255 types. Size expands to
       accomodate additional types as-needed.
-    - Data member assignment/access is 1 branch + 1 virtual function call
-    - Function call via `.invoke<T>` is 1 branch + 1 virtual function call
-    - Function call with `(...)` forwards its arguments through a tuple, and may
-      be more expensive
+    - Data member assignment/access is 1 virtual function call + 1 or more
+      branches to locate the correct function type.
+        - The number of branches will typically be very low, since branch count
+          scales with the number of unique member types that the arg type is
+          implicitly convertible to.
+    - Function calls use perfect forwarding on their arguments, so the overhead
+      should only be 1 virtual function call + 1 or more branches.
+        - The maximum number of branches should also typically be fairly low,
+          since the branch count will scale with the number of unique function
+          signatures on the object that can implicitly match the arguments and
+          the return type.
 
 ## Limitations
+- Requires a C++14 compliant compiler
+    - Tested on VS2015 and mingw/g++ 4.9.2
+    - VS2015 has a bug that prevents reflecting private members
 - No support for reflecting const objects
-- No automatic type conversion
 - No support for static members
 - No exposure of reflected members/names so they can be iterated over
-- Requires a C++14 compliant compiler
-    - Tested on VS2015 RC and mingw/g++ 4.9.2
-    - VS2015 RC has a bug that prevents reflecting private members
 
 ## Future features
-1. Implicit conversion should be relatively straightforward to implement and is
-   planned next
-2. Reflection of const objects, preserving const/mutableness of members
-3. Exposure of member info via iterators
-4. Support for static data/interacting with static data without needing a class
+1. Reflection of const objects, preserving const/mutableness of members
+2. Exposure of member info via iterators
+3. Support for static data/interacting with static data without needing a class
    instance
 
 See test/main.cxx for more example usages.
