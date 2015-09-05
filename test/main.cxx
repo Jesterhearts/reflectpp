@@ -1,4 +1,6 @@
 #include <cassert>
+#include <chrono>
+#include <cmath>
 #include <iostream>
 
 #include "reflectpp/reflect.h"
@@ -19,6 +21,8 @@ struct NonCopyable {
     NonCopyable& operator=(NonCopyable&&)      = default;
     NonCopyable& operator=(const NonCopyable&) = delete;
 };
+
+static int tally = 0;
 
 struct Foo {
     int i;
@@ -48,9 +52,13 @@ struct Foo {
     void NC(NonCopyable nc) {
         std::cout << "NC called" << std::endl;
     }
+
+    void Tally(int x) {
+        tally += 1 + x % static_cast<int>(std::sqrt(tally + 10));
+    }
 };
 
-REFLECT_ENABLE(Foo, i, b, c, ncmem, Bar, Baz, Baz2, Perf, NC)
+REFLECT_ENABLE(Foo, i, b, c, ncmem, Bar, Baz, Baz2, Perf, NC, Tally)
 
 static_assert(reflect::detail::class_reflection_info<Foo>::TypeInfo::get_type_id<int>() == 0, "");
 static_assert(reflect::detail::class_reflection_info<Foo>::TypeInfo::get_type_id<bool>() == 1, "");
@@ -123,4 +131,36 @@ int main() {
 
     NonCopyable nc2{ 10 };
     reflected["ncmem"] = std::move(nc);
+
+    constexpr int iters = 100000000;
+    std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
+    start = std::chrono::high_resolution_clock::now();
+
+    for (int i = 0; i < iters; ++i) {
+        f.Tally(42);
+    }
+
+    end = std::chrono::high_resolution_clock::now();
+
+    std::chrono::duration<long double, std::nano> delta = end - start;
+    long double delta_per_iter = delta.count() / (long double)iters;
+    std::cout.precision(15);
+
+    std::cout << "direct: \t" << delta_per_iter << " ns/iter" << std::endl;
+
+    start = std::chrono::high_resolution_clock::now();
+
+    for (int i = 0; i < iters; ++i) {
+        reflected["Tally"](42);
+    }
+
+    end = std::chrono::high_resolution_clock::now();
+
+    delta = end - start;
+    delta_per_iter = delta.count() / (long double)iters;
+    std::cout.precision(15);
+
+    std::cout << "reflected: \t" << delta_per_iter << " ns/iter" << std::endl;
+
+    std::cout << tally << std::endl;
 }

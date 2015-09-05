@@ -49,7 +49,11 @@ struct member_typemap_impl<
 
     using reflected_instance<Class>::reflected_instance;
 
-    ReflectedType& get_member(const char* name, size_t len, member_typelist<>) {
+    ReflectedType& get_member(
+        const char* name,
+        size_t len,
+        member_typelist<>) const
+    {
         throw bad_member_access{ std::string{"No member named: "} + name };
     }
 
@@ -59,10 +63,9 @@ struct member_typemap_impl<
         size_t len,
         member_typelist<Option, Options...>)
     {
-        auto key = member_name<Option>::key();
-        auto keylen = (sizeof(member_name<Option>::key()) - 1);
-        if (len == (sizeof(member_name<Option>::key()) - 1)
-            && std::memcmp(name, member_name<Option>::key(), len) == 0)
+        constexpr auto key = member_name<Option>::key();
+        constexpr auto keylen = (sizeof(member_name<Option>::key()) - 1);
+        if (len == keylen && std::memcmp(name, key, len) == 0)
         {
             return static_cast<ReflectedType&>(
                 static_cast<member<Option, type_repr>&>(*this)
