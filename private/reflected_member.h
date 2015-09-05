@@ -53,26 +53,25 @@ struct reflected_member {
 
     template<typename ReturnType, typename... Args>
     ReturnType invoke(Args&&... args) {
-        using Type = ReturnType(*)(Args&&...);
+        using Type     = ReturnType(Args&&...);
         using TypeInfo = TypeInfo<Class, Type>;
-        static_assert(
-            TypeInfo::value,
-            "Requested type is not a member type of this class"
+        using Options  = decltype(
+            filter_compatible_fns<Type>(FnTypes<Class>())
         );
 
-        if (TypeInfo::index != tag) {
-            throw bad_member_access{
-                "Attempting to call nonexistent function"
-            };
+        if (TypeInfo::value && TypeInfo::index == tag) {
+            return static_cast<
+                member_invoker<Class, ThisType, ReturnType, Args&&...>&
+            >(*this)(std::forward<Args>(args)...);
         }
 
-        return static_cast<
-            member_invoker<Class, ThisType, ReturnType, Args&&...>&
-        >(*this)(std::forward<Args>(args)...);
+        return invoke<ReturnType>(Options(), std::forward<Args>(args)...);
     }
 
     template<typename... Args>
-    reflected_member_call<Class, ThisType, Args&&...> operator()(Args&&... args) {
+    reflected_member_call<Class, ThisType, Args&&...> operator()(
+        Args&&... args)
+    {
         return reflected_member_call<Class, ThisType, Args&&...>{
             this,
             std::forward<Args>(args)...
@@ -88,6 +87,37 @@ private:
 
     template<typename, typename, typename, typename...>
     friend struct member_invoker;
+
+    template<typename ReturnType, typename... Args>
+    ReturnType invoke(typelist<>, Args&&... args) {
+        throw bad_member_access{
+            "Attempting to call nonexistent function"
+        };
+    }
+
+    template<
+        typename ReturnType,
+        typename... Args,
+        typename OptionRT,
+        typename... OptionArgs,
+        typename... Options>
+    ReturnType invoke(
+        typelist<OptionRT(OptionArgs...), Options...>,
+        Args&&... args)
+    {
+        using TypeInfo = TypeInfo<Class, OptionRT(OptionArgs...)>;
+
+        if (TypeInfo::index == tag) {
+            return static_cast<
+                member_invoker<Class, ThisType, OptionRT, OptionArgs...>&
+            >(*this)(std::forward<Args>(args)...);
+        }
+
+        return invoke<ReturnType>(
+            typelist<Options...>(),
+            std::forward<Args>(args)...
+        );
+    }
 
 };
 

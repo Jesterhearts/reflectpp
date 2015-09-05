@@ -15,6 +15,9 @@ using TypeInfo = find_duplicate_type<
     typename class_reflection_info<Class>::TypeInfo::Types
 >;
 
+template<typename Class>
+using FnTypes = typename class_reflection_info<Class>::TypeInfo::FnTypes;
+
 }
 }
 

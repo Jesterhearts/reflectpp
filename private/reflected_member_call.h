@@ -4,6 +4,8 @@
 
 #include "class_reflection_info.h"
 #include "exceptions.h"
+#include "filter_types.h"
+#include "implicitly_equal_types.h"
 #include "member_invoker.h"
 #include "number_list.h"
 
@@ -34,33 +36,21 @@ struct reflected_member_call {
     template<typename ReturnType>
     operator ReturnType() {
         called = true;
-        return invoke_perfect<ReturnType>(number_list_t<sizeof...(Args)>());
+        return invoke<ReturnType>(number_list_t<sizeof...(Args)>());
     }
 
     ~reflected_member_call() noexcept(false) {
         if(called) return;
         called = true;
-        invoke_perfect<void>(number_list_t<sizeof...(Args)>());
+        invoke<void>(number_list_t<sizeof...(Args)>());
     }
 
 private:
     template<typename ReturnType, size_t... ParamNum>
-    ReturnType invoke_perfect(number_list<ParamNum...>) {
-        using Type = ReturnType(*)(Args...);
-        using TypeInfo = TypeInfo<Class, Type>;
-
-        const auto v = TypeInfo::value;
-        const auto t = TypeInfo::index;
-
-        if (!TypeInfo::value || TypeInfo::index != fnptr->tag) {
-            throw bad_member_access{
-                "Attempting to call nonexistent function"
-            };
-        }
-
-        return static_cast<
-            member_invoker<Class, ReflectedType, ReturnType, Args...>&
-        >(*fnptr)(std::get<ParamNum>(std::move(params))...);
+    ReturnType invoke(number_list<ParamNum...>) {
+        return fnptr->invoke<ReturnType>(
+            std::get<ParamNum>(std::move(params))...
+        );
     }
 };
 
@@ -81,7 +71,7 @@ struct reflected_member_call<Class, ReflectedType> {
 
     template<typename ReturnType>
     operator ReturnType() {
-        using Type = ReturnType(*)();
+        using Type = ReturnType();
         using TypeInfo = TypeInfo<Class, Type>;
         static_assert(
             TypeInfo::value,
@@ -101,7 +91,7 @@ struct reflected_member_call<Class, ReflectedType> {
 private:
     template<typename ReturnType>
     ReturnType invoke() {
-        using Type = ReturnType(*)();
+        using Type = ReturnType();
         using TypeInfo = TypeInfo<Class, Type>;
 
         if (!TypeInfo::value || TypeInfo::index != fnptr->tag) {

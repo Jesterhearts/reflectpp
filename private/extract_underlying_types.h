@@ -30,7 +30,7 @@ struct extract_underlying_type<
     typelist<member_info<ReturnType(Class::*)(Args...), Member>, Members... >>
 {
     using remain = typelist<Members...>;
-    using head = ReturnType(*) (Args...);
+    using head = ReturnType(Args...);
 };
 
 template<typename... extracted>

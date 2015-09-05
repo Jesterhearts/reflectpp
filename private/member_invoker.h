@@ -7,7 +7,7 @@ namespace detail {
 
 template<typename Class, typename Base, typename ReturnType, typename... Args>
 struct member_invoker : Base {
-    using Type = ReturnType(*) (Args...);
+    using Type = ReturnType(Args...);
 
     member_invoker() : Base{ TypeInfo<Class, Type>::index } {}
 

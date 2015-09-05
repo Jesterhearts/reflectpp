@@ -56,7 +56,7 @@ template<
 struct member<member_info<ReturnType(Class::*)(Args...), MemberFn>, TypeRepr>
     : member_invoker<Class, reflected_member<Class, TypeRepr>, ReturnType, Args...>
 {
-    using Type = ReturnType(*) (Args...);
+    using Type = ReturnType(Args...);
 
     ReturnType operator()(Args... args) override {
         return (static_cast<reflected_instance<Class>*>(

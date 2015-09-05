@@ -3,16 +3,19 @@
 
 #include "reflectpp/reflect.h"
 
-struct NC {
+struct Perfect {
     int m;
 
-    NC(const NC&) = delete;
-    NC(NC&&) = default;
+    Perfect(const Perfect&) = delete;
+    Perfect(Perfect&&)      = delete;
 };
 
-void NcByVal(NC nc) {
+struct NonCopyable {
+    int m;
 
-}
+    NonCopyable(const NonCopyable&) = delete;
+    NonCopyable(NonCopyable&&)      = default;
+};
 
 struct Foo {
     int i;
@@ -34,17 +37,21 @@ struct Foo {
         return x;
     }
 
-    void Nc(NC&& n) {
-        std::cout << "Nc called" << std::endl;
+    void Perf(Perfect&& n) {
+        std::cout << "Perf called" << std::endl;
+    }
+
+    void NC(NonCopyable nc) {
+        std::cout << "NC called" << std::endl;
     }
 };
 
-REFLECT_ENABLE(Foo, i, b, c, Bar, Baz, Baz2, Nc)
+REFLECT_ENABLE(Foo, i, b, c, Bar, Baz, Baz2, Perf, NC)
 
 static_assert(reflect::detail::class_reflection_info<Foo>::TypeInfo::get_type_id<int>() == 0, "");
 static_assert(reflect::detail::class_reflection_info<Foo>::TypeInfo::get_type_id<bool>() == 1, "");
 static_assert(reflect::detail::class_reflection_info<Foo>::TypeInfo::get_type_id<char>() == 2, "");
-static_assert(reflect::detail::class_reflection_info<Foo>::TypeInfo::get_type_id<void(*)()>() == 3, "");
+static_assert(reflect::detail::class_reflection_info<Foo>::TypeInfo::get_type_id<void()>() == 3, "");
 
 static_assert(reflect::detail::find_duplicate_type<bool, reflect::detail::typelist<bool>>::value, "");
 static_assert(reflect::detail::find_duplicate_type<bool, reflect::detail::typelist<int, bool>>::value, "");
@@ -107,9 +114,8 @@ int main() {
         std::cout << "caught: " << e.what() << std::endl;
     }
 
-    //i = 42;
-    //int x = reflected["Baz2"](i);
-    //assert(x == 42);
+    int x = reflected["Baz2"](42);
+    assert(x == 42);
 
     try {
         int x = reflected["Bar"]();
@@ -118,5 +124,8 @@ int main() {
         std::cout << "caught: " << e.what() << std::endl;
     }
 
-    reflected["Nc"](std::move(NC{10}));
+    reflected["Perf"](Perfect{10});
+
+    NonCopyable nc{ 10 };
+    reflected["NC"](std::move(nc));
 }
