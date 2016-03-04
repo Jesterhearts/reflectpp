@@ -65,7 +65,6 @@ catch (const reflect::bad_member_access&) {
 ## Limitations
 - Requires a C++14 compliant compiler
     - Tested on VS2015 and mingw/g++ 4.9.2
-    - VS2015 has a bug that prevents reflecting private members
 - No support for reflecting/accessing base class members
 - No support for reflecting const objects
 - No support for static members
