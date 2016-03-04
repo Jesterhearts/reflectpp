@@ -24,6 +24,10 @@ template<typename> struct class_reflection_info;
         static auto reflect(Class& instance) {          \
             return TypeInfo{ instance };                \
         }                                               \
+                                                        \
+        static auto reflect() {                         \
+            return TypeInfo{};                          \
+        }                                               \
     };                                                  \
     }                                                   \
     }

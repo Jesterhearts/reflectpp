@@ -37,7 +37,7 @@ struct member_typemap_impl<
     member_underlyingtype_set<underlying_members...>,
     index_list<indexes...>
 > : reflected_instance<Class>,
-    member<members, type_repr_t<underlying_members...>>...
+    member<Class, members, type_repr_t<underlying_members...>>...
 {
     using Members       = member_typelist<members...>;
     using Types         = member_underlyingtype_set<underlying_members...>;
@@ -54,7 +54,7 @@ struct member_typemap_impl<
         size_t len,
         member_typelist<>) const
     {
-        throw bad_member_access{ std::string{"No member named: "} + name };
+        throw member_access_error{ std::string{"No member named: "} + name };
     }
 
     template<typename Option, typename... Options>
@@ -68,7 +68,7 @@ struct member_typemap_impl<
         if (len == keylen && std::memcmp(name, key, len) == 0)
         {
             return static_cast<ReflectedType&>(
-                static_cast<member<Option, type_repr>&>(*this)
+                static_cast<member<Class, Option, type_repr>&>(*this)
             );
         }
 
@@ -81,7 +81,6 @@ struct member_typemap_impl<
 
     ReflectedType& operator[](const std::string& name) {
         return get_member(name.c_str(), name.length(), Members());
-        return (*this)();
     }
 
     template<typename type>

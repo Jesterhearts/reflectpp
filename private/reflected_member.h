@@ -76,8 +76,8 @@ struct reflected_member {
 private:
     template<typename ReturnType, typename... Args>
     ReturnType invoke(typelist<>, Args&&... args) {
-        throw bad_member_access{
-            "Attempting to call nonexistent function"
+        throw invalid_function_call{
+            "No matching function for argument list"
         };
     }
 
@@ -109,7 +109,7 @@ private:
 
     template<typename Type>
     void assign(typelist<>, Type&& arg) {
-        throw bad_member_access{
+        throw invalid_assignment_type{
             "Attempting to assign wrong type to member"
         };
     }
@@ -130,8 +130,8 @@ private:
 
     template<typename Type>
     Type get(typelist<>) {
-        throw bad_member_access{
-            "Attempting to read from wrong member type"
+        throw invalid_requested_member_type{
+            "Member type does not match requested type"
         };
     }
 

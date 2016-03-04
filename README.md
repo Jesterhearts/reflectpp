@@ -7,18 +7,23 @@ prime example being serialization. This library provides a relatively efficient
 way of doing so, allowing you to write code like this:
 ```
 struct MyCalc {
-    int add(int, int);
-    int sub(int, int);
-    int mul(int, int);
-    int div(int, int);
+    static int add(int, int);
+    static int sub(int, int);
+    static int mul(int, int);
+    static int div(int, int);
+
+    void plus(int);
+    void minus(int);
+    void times(int);
+    void divided_by(int);
+
+    int value;
 };
 
-REFLECT_ENABLE(MyCalc, add, sub, mul, div)
+REFLECT_ENABLE(MyCalc, add, sub, mul, div, plus, minus, times, divided_by)
 
 //...
-MyCalc mycalc;
-
-auto reflected = reflect::reflect(mycalc);
+auto static_calc = reflect::reflect<MyCalc>();
 
 std::cout << "Enter an operation (add, sub, mul, div):" << std::endl;
 
@@ -38,9 +43,31 @@ try {
     int result = reflected[op](a, b);
     std::cout << "result: " << result << std::endl;
 }
-catch (const reflect::bad_member_access&) {
+catch (const reflect::member_access_error&) {
     std::cout << "invalid operation" << std::endl;
 }
+
+MyCalc mycalc;
+auto dynamic_calc = reflect::reflect(mycalc);
+
+std::cout << "Enter an operation (plus, minus, times, divided_by):" << std::endl;
+
+std::string op;
+std::cin >> op;
+
+std::cout << "Enter a number:" << std::endl;
+std::cin >> a;
+
+try {
+    reflected[op](a);
+    double value = reflected["value"];
+
+    std::cout << "current value: " << value << std::endl;
+}
+catch (const reflect::member_access_error&) {
+    std::cout << "invalid operation" << std::endl;
+}
+
 ```
 
 ## Features
@@ -64,17 +91,15 @@ catch (const reflect::bad_member_access&) {
 
 ## Limitations
 - Requires a C++14 compliant compiler
-    - Tested on VS2015 and mingw/g++ 4.9.2
+    - Tested on VS2015, VS2015 + clang front-end
+- No support for overloaded member functions
 - No support for reflecting/accessing base class members
 - No support for reflecting const objects
-- No support for static members
 - No exposure of reflected members/names so they can be iterated over
 
 ## Future features
-1. Support for inheritance and reflecting base-objects
-2. Reflection of const objects, preserving const/mutableness of members
-3. Exposure of member info via iterators
-4. Support for static data/interacting with static data without needing a class
-   instance
+1. Exposure of member info via iterators
+2. Reflection of const objects, preserving mutableness of members
+3. Support for inheritance and reflecting base-objects
 
 See test/main.cxx for more example usages.

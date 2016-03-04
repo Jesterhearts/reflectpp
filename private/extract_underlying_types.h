@@ -33,6 +33,17 @@ struct extract_underlying_type<
     using head = ReturnType(Args...);
 };
 
+template<
+    typename MemberType,
+    MemberType* Member,
+    typename... Members>
+struct extract_underlying_type<
+    typelist<member_info<MemberType*, Member>, Members... >>
+{
+    using remain = typelist<Members...>;
+    using head = MemberType;
+};
+
 template<typename... extracted>
 constexpr const auto extract_underlying_types(
     typelist<>,

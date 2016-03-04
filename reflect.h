@@ -12,4 +12,10 @@ template<typename Class>
 auto reflect(Class& instance) {
     return detail::class_reflection_info<Class>::reflect(instance);
 }
+
+template<typename Class>
+auto reflect() {
+    return detail::class_reflection_info<Class>::reflect();
+}
+
 }

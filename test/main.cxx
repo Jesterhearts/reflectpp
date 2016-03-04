@@ -3,7 +3,7 @@
 #include <cmath>
 #include <iostream>
 
-#include "reflectpp/reflect.h"
+#include "reflect.h"
 
 struct Perfect {
     int m;
@@ -60,6 +60,21 @@ struct Foo {
 
 REFLECT_ENABLE(Foo, i, b, c, ncmem, Bar, Baz, Baz2, Perf, NC, Tally)
 
+struct Static {
+   static int abc;
+};
+
+int Static::abc = 1;
+
+REFLECT_ENABLE(Static, abc);
+
+struct Const {
+   const static int _static = 10;
+   const int _const = 12;
+};
+
+REFLECT_ENABLE(Const, _static, _const);
+
 static_assert(reflect::detail::class_reflection_info<Foo>::TypeInfo::get_type_id<int>() == 0, "");
 static_assert(reflect::detail::class_reflection_info<Foo>::TypeInfo::get_type_id<bool>() == 1, "");
 static_assert(reflect::detail::class_reflection_info<Foo>::TypeInfo::get_type_id<char>() == 2, "");
@@ -82,55 +97,117 @@ static_assert(reflect::detail::typelist_to_numberlist<reflect::detail::typeset<b
 int main() {
 
     Foo f{};
+    auto reflectfoo = reflect::reflect(f);
+    {
+        reflectfoo["i"] = 'c';
 
-    auto reflected = reflect::reflect(f);
+        reflectfoo["i"] = 10;
+        assert(f.i == 10);
+        std::cout << f.i << std::endl;
 
-    reflected["i"] = 'c';
+        int a = reflectfoo["i"];
+        assert(a == 10);
 
-    reflected["i"] = 10;
-    assert(f.i == 10);
-    std::cout << f.i << std::endl;
+        char c = reflectfoo["i"];
 
-    int a = reflected["i"];
-    assert(a == 10);
+        reflectfoo["Bar"]();
+        reflectfoo["Bar"].invoke<void>();
+        assert(f.b);
 
-    char c = reflected["i"];
+        try {
+            reflectfoo["i"]();
+            assert(false);
+        }
+        catch (const reflect::invalid_function_call& e) {
+            std::cout << "caught: " << e.what() << std::endl;
+        }
 
-    reflected["Bar"]();
-    reflected["Bar"].invoke<void>();
-    assert(f.b);
+        try {
+            reflectfoo["i"] = std::string();
+            assert(false);
+        }
+        catch (const reflect::invalid_assignment_type& e) {
+            std::cout << "caught: " << e.what() << std::endl;
+        }
 
-    try {
-        reflected["i"]();
-        assert(false);
+        int i = reflectfoo["Baz"]();
+        assert(i == 10);
+        reflectfoo["Baz"]();
+
+        int x = reflectfoo["Baz2"](42);
+        assert(x == 42);
+        double d = reflectfoo["Baz2"](42.0);
+
+        try {
+            int x = reflectfoo["Bar"]();
+            assert(false);
+        }
+        catch (const reflect::invalid_function_call& e) {
+            std::cout << "caught: " << e.what() << std::endl;
+        }
+
+        try {
+            std::string s = reflectfoo["i"];
+            assert(false);
+        }
+        catch (const reflect::invalid_requested_member_type& e) {
+            std::cout << "caught: " << e.what() << std::endl;
+        }
+
+        reflectfoo["Perf"](Perfect{ 10 });
+
+        NonCopyable nc{ 10 };
+        reflectfoo["NC"](std::move(nc));
+
+        NonCopyable nc2{ 10 };
+        reflectfoo["ncmem"] = std::move(nc);
     }
-    catch (const reflect::bad_member_access& e) {
-        std::cout << "caught: " << e.what() << std::endl;
+
+    auto reflectstaticfoo = reflect::reflect<Foo>();
+    {
+        try {
+            int  i = reflectstaticfoo["i"];
+            assert(false);
+        }
+        catch (const reflect::member_access_error& e) {
+            std::cout << "caught: " << e.what() << std::endl;
+        }
     }
 
-    int i = reflected["Baz"]();
-    assert(i == 10);
-    reflected["Baz"]();
+    auto reflectstatic = reflect::reflect<Static>();
+    {
+        int abc = reflectstatic["abc"];
+        assert(abc == Static::abc);
 
-    int x = reflected["Baz2"](42);
-    assert(x == 42);
-    double d = reflected["Baz2"](42.0);
-
-    try {
-        int x = reflected["Bar"]();
-        assert(false);
-    }
-    catch (const reflect::bad_member_access& e) {
-        std::cout << "caught: " << e.what() << std::endl;
+        reflectstatic["abc"] = 2;
+        assert(Static::abc == 2);
     }
 
-    reflected["Perf"](Perfect{10});
+    Const _const;
+    auto reflectconst = reflect::reflect(_const);
+    {
+        int c = reflectconst["_const"];
+        assert(c == _const._const);
 
-    NonCopyable nc{ 10 };
-    reflected["NC"](std::move(nc));
+        try {
+            reflectconst["_const"] = 10;
+            assert(false);
+        }
+        catch (const reflect::invalid_assignment_to_const& e) {
+            std::cout << "caught: " << e.what() << std::endl;
+        }
 
-    NonCopyable nc2{ 10 };
-    reflected["ncmem"] = std::move(nc);
+        int s = reflectconst["_static"];
+        assert(s == Const::_static);
+
+        try {
+            reflectconst["_static"] = 10;
+            assert(false);
+        }
+        catch (const reflect::invalid_assignment_to_const& e) {
+            std::cout << "caught: " << e.what() << std::endl;
+        }
+    }
 
     constexpr int iters = 100000000;
     std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
@@ -151,7 +228,7 @@ int main() {
     start = std::chrono::high_resolution_clock::now();
 
     for (int i = 0; i < iters; ++i) {
-        reflected["Tally"](42);
+        reflectfoo["Tally"](42);
     }
 
     end = std::chrono::high_resolution_clock::now();
@@ -164,5 +241,5 @@ int main() {
 
     std::cout << tally << std::endl;
 
-    std::cin >> c;
+    std::cin.ignore();
 }
