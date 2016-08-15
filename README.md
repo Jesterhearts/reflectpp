@@ -98,8 +98,11 @@ catch (const reflect::member_access_error&) {
 - No exposure of reflected members/names so they can be iterated over
 
 ## Future features
-1. Exposure of member info via iterators
-2. Reflection of const objects, preserving mutableness of members
-3. Support for inheritance and reflecting base-objects
+1. Support for REPL-style code
+  1. Variable creation/assignment
+  2. Limited sandboxing of executed commands
+2. Exposure of member info via iterators
+3. Reflection of const objects, preserving mutableness of members
+4. Support for inheritance and reflecting base-objects
 
 See test/main.cxx for more example usages.
