@@ -38,9 +38,8 @@ std::cin >> a;
 int b;
 std::cin >> b;
 
-
 try {
-    int result = reflected[op](a, b);
+    int result = static_calc[op](a, b);
     std::cout << "result: " << result << std::endl;
 }
 catch (const reflect::member_access_error&) {
