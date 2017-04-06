@@ -3,7 +3,7 @@
 namespace reflect {
 namespace detail {
 
-    template<typename...> struct typelist {};
+template<typename...> struct typelist {};
 
 }
 }

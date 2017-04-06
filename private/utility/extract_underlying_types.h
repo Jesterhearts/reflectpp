@@ -8,78 +8,78 @@ namespace detail {
 template<typename> struct extract_underlying_type;
 
 template<
-    typename MemberType,
-    typename Class,
-    MemberType Class::* Member,
-    typename... Members>
-struct extract_underlying_type<
-    typelist<member_info<MemberType Class::*, Member>, Members... >>
+   typename MemberType,
+   typename Class,
+   MemberType Class::* Member,
+   typename... Members>
+   struct extract_underlying_type<
+   typelist<member_info<MemberType Class::*, Member>, Members... >>
 {
-    using remain = typelist<Members...>;
-    using head = MemberType;
+   using remain = typelist<Members...>;
+   using head = MemberType;
 };
 
 template<
-    typename ReturnType,
-    typename Class,
-    typename... Args,
-    ReturnType(Class::* Member)(Args...),
-    typename... Members>
-struct extract_underlying_type<
-    typelist<member_info<ReturnType(Class::*)(Args...), Member>, Members... >>
+   typename ReturnType,
+   typename Class,
+   typename... Args,
+   ReturnType(Class::* Member)(Args...),
+   typename... Members>
+   struct extract_underlying_type<
+   typelist<member_info<ReturnType(Class::*)(Args...), Member>, Members... >>
 {
-    using remain = typelist<Members...>;
-    using head = ReturnType(Args...);
+   using remain = typelist<Members...>;
+   using head = ReturnType(Args...);
 };
 
 template<
-    typename MemberType,
-    MemberType* Member,
-    typename... Members>
-struct extract_underlying_type<
-    typelist<member_info<MemberType*, Member>, Members... >>
+   typename MemberType,
+   MemberType* Member,
+   typename... Members>
+   struct extract_underlying_type<
+   typelist<member_info<MemberType*, Member>, Members... >>
 {
-    using remain = typelist<Members...>;
-    using head = MemberType;
+   using remain = typelist<Members...>;
+   using head = MemberType;
 };
 
 template<typename... extracted>
 constexpr const auto extract_underlying_types(
-    typelist<>,
-    typelist<extracted...>)
+   typelist<>,
+   typelist<extracted...>)
 {
-    return typelist<extracted...>();
+   return typelist<extracted...>();
 }
 
 template<typename... members, typename... extracted>
 constexpr const auto extract_underlying_types(
-    typelist<members...>,
-    typelist<extracted...>)
+   typelist<members...>,
+   typelist<extracted...>)
 {
-    using Extracted1 = extract_underlying_type<typelist<members...>>;
-    return extract_underlying_types(
-        typename Extracted1::remain(),
-        typelist<extracted..., typename Extracted1::head>()
-    );
+   using Extracted1 = extract_underlying_type<typelist<members...>>;
+   return extract_underlying_types(
+      typename Extracted1::remain(),
+      typelist<extracted..., typename Extracted1::head>()
+   );
 }
 
 template<typename... members>
 constexpr const auto extract_underlying_types(typelist<members...>) {
-    using Extracted1 = extract_underlying_type<typelist<members...>>;
-    return extract_underlying_types(
-        typename Extracted1::remain(),
-        typelist<typename Extracted1::head>()
-    );
+   using Extracted1 = extract_underlying_type<typelist<members...>>;
+   return extract_underlying_types(
+      typename Extracted1::remain(),
+      typelist<typename Extracted1::head>()
+   );
 }
 
 template<typename... list>
 using member_underlyingtype_list = decltype(
-    extract_underlying_types(typelist<list...>())
+   extract_underlying_types(typelist<list...>())
 );
 
 template<typename... list>
 using member_underlyingtype_set = decltype(
-    filter_types(member_underlyingtype_list<list...>())
+   filter_types(member_underlyingtype_list<list...>())
 );
 
 }

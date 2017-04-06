@@ -50,7 +50,7 @@ struct reflected_member {
    template<typename Type>
    void operator=(Type&& arg) {
       using TypeInfo = TypeInfo<Class, Type>;
-      using Options  = decltype(
+      using Options = decltype(
          filter_compatible_types<Type>(ObjTypes<Class>())
       );
 
@@ -65,16 +65,16 @@ struct reflected_member {
 
    template<typename ReturnType, typename... Args>
    ReturnType invoke(Args&&... args) {
-      using Type     = ReturnType(Args&&...);
+      using Type = ReturnType(Args&&...);
       using TypeInfo = TypeInfo<Class, Type>;
-      using Options  = decltype(
+      using Options = decltype(
          filter_compatible_types<Type>(FnTypes<Class>())
       );
 
       if (TypeInfo::value && TypeInfo::index == tag) {
          return static_cast<ReturnType>(
             static_cast<
-               member_invoker<Class, ThisType, ReturnType, Args&&...>&
+            member_invoker<Class, ThisType, ReturnType, Args&&...>&
             >(*this)(std::forward<Args>(args)...)
          );
       }
@@ -84,7 +84,7 @@ struct reflected_member {
 
    template<typename... Args>
    reflected_member_call<Class, ThisType, Args&&...> operator()(Args&&... args) {
-      return { *this, std::forward<Args>(args)... };
+      return{ *this, std::forward<Args>(args)... };
    }
 
 private:
@@ -101,16 +101,16 @@ private:
       typename OptionRT,
       typename... OptionArgs,
       typename... Options>
-   ReturnType invoke(
-      typelist<OptionRT(OptionArgs...), Options...>,
-      Args&&... args)
+      ReturnType invoke(
+         typelist<OptionRT(OptionArgs...), Options...>,
+         Args&&... args)
    {
       using TypeInfo = TypeInfo<Class, OptionRT(OptionArgs...)>;
 
       if (TypeInfo::index == tag) {
          return static_cast<ReturnType>(
             static_cast<
-               member_invoker<Class, ThisType, OptionRT, OptionArgs...>&
+            member_invoker<Class, ThisType, OptionRT, OptionArgs...>&
             >(*this)(static_cast<OptionArgs>(std::forward<Args>(args))...)
          );
       }
@@ -153,7 +153,7 @@ private:
       typename Type,
       typename Option,
       typename... Options>
-   Type get(typelist<Option, Options...>)
+      Type get(typelist<Option, Options...>)
    {
       using TypeInfo = TypeInfo<Class, Option>;
 
@@ -167,7 +167,7 @@ private:
    }
 
    constexpr reflected_member(const reflected_member&) = default;
-   constexpr reflected_member(reflected_member&&)     = default;
+   constexpr reflected_member(reflected_member&&) = default;
 
    template<typename, typename, typename, typename>
    friend struct member_assigner;

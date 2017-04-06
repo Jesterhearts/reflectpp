@@ -11,8 +11,8 @@ template<typename> struct class_reflection_info;
 //  working in some cases, this is a workaround
 template<typename Class, typename type>
 using TypeInfo = find_duplicate_type<
-    type,
-    typename class_reflection_info<Class>::TypeInfo::Types
+   type,
+   typename class_reflection_info<Class>::TypeInfo::Types
 >;
 
 template<typename Class>

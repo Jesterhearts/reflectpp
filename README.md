@@ -73,20 +73,9 @@ catch (const reflect::member_access_error&) {
 - Full object reflection of members and functions.
 - Reflected members can be interacted with using `operator=` and `operator()`,
   allowing them to be used as if they were an actual value.
-- Relatively low runtime overhead:
-    - 1 byte per distinct member type, up to 255 types. Size expands to
-      accomodate additional types as-needed.
-    - Data member assignment/access is 1 virtual function call + 1 or more
-      branches to locate the correct function type.
-        - The number of branches will typically be very low, since branch count
-          scales with the number of unique member types that the arg type is
-          implicitly convertible to.
-    - Function calls use perfect forwarding on their arguments, so the overhead
-      should only be 1 virtual function call + 1 or more branches.
-        - The maximum number of branches should also typically be fairly low,
-          since the branch count will scale with the number of unique function
-          signatures on the object that can implicitly match the arguments and
-          the return type.
+- Support for non-copyable and non-movable objects
+- Preserves const-ness of member variables.
+- Relatively low runtime overhead.
 
 ## Limitations
 - Requires a C++14 compliant compiler
