@@ -3,7 +3,7 @@
 #include <cmath>
 #include <iostream>
 
-#include "reflect.h"
+#include <reflect.h>
 
 struct Perfect {
     int m;
@@ -28,7 +28,7 @@ struct Foo {
     int i;
     bool b;
     char c;
-    NonCopyable ncmem;
+    NonCopyable ncmem{ 43 };
 
     void Bar() {
         std::cout << "Bar called" << std::endl;
@@ -73,7 +73,20 @@ struct Const {
    const int _const = 12;
 };
 
+const int Const::_static;
+
 REFLECT_ENABLE(Const, _static, _const);
+
+struct Arrays {
+   int* iptr = new int(42);
+   int iarr10[10] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+
+   ~Arrays() {
+      delete iptr;
+   }
+};
+
+REFLECT_ENABLE(Arrays, iptr, iarr10);
 
 static_assert(reflect::detail::class_reflection_info<Foo>::TypeInfo::get_type_id<int>() == 0, "");
 static_assert(reflect::detail::class_reflection_info<Foo>::TypeInfo::get_type_id<bool>() == 1, "");
@@ -107,6 +120,9 @@ int main() {
 
         int a = reflectfoo["i"];
         assert(a == 10);
+
+        int& aref = reflectfoo["i"];
+        assert(aref == 10);
 
         char c = reflectfoo["i"];
 
@@ -156,11 +172,15 @@ int main() {
 
         reflectfoo["Perf"](Perfect{ 10 });
 
-        NonCopyable nc{ 10 };
-        reflectfoo["NC"](std::move(nc));
+        NonCopyable& ncref = reflectfoo["ncmem"];
+        assert(ncref.m == 43);
 
         NonCopyable nc2{ 10 };
-        reflectfoo["ncmem"] = std::move(nc);
+        reflectfoo["ncmem"] = std::move(nc2);
+        assert(ncref.m == 10);
+
+        NonCopyable nc{ 10 };
+        reflectfoo["NC"](std::move(nc));
     }
 
     auto reflectstaticfoo = reflect::reflect<Foo>();
@@ -207,6 +227,16 @@ int main() {
         catch (const reflect::invalid_assignment_to_const& e) {
             std::cout << "caught: " << e.what() << std::endl;
         }
+    }
+
+    Arrays arrays;
+    auto reflectarrays = reflect::reflect(arrays);
+    {
+        int* p = reflectarrays["iptr"];
+        assert(p == arrays.iptr);
+
+        int* arrptr = reflectarrays["iarr10"];
+        assert(arrptr == arrays.iarr10);
     }
 
     constexpr int iters = 100000000;

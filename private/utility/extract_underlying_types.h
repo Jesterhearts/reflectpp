@@ -1,7 +1,6 @@
 #pragma once
 
 #include "filter_types.h"
-#include "member_info.h"
 #include "typelist.h"
 
 namespace reflect {

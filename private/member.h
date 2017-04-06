@@ -3,10 +3,11 @@
 #include <utility>
 
 #include "member_assigner.h"
-#include "member_info.h"
-#include "member_names.h"
 #include "reflected_instance.h"
 #include "reflected_member.h"
+
+#include "macros/member_info.h"
+#include "macros/member_names.h"
 
 namespace reflect {
 namespace detail {

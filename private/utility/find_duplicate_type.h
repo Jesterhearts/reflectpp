@@ -2,12 +2,12 @@
 
 #include <type_traits>
 
-#include "member_info.h"
 #include "typelist.h"
-
 
 namespace reflect {
 namespace detail {
+
+template<typename MemberType, MemberType> struct member_info;
 
 template<size_t, typename, typename>
 struct find_duplicate_type_impl;

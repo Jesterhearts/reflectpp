@@ -2,12 +2,14 @@
 
 #include <tuple>
 
-#include "class_reflection_info.h"
 #include "exceptions.h"
-#include "filter_types.h"
-#include "implicitly_equal_types.h"
 #include "member_invoker.h"
-#include "number_list.h"
+
+#include "macros/class_reflection_info.h"
+
+#include "utility/filter_types.h"
+#include "utility/implicitly_equal_types.h"
+#include "utility/number_list.h"
 
 namespace reflect {
 namespace detail {
@@ -15,11 +17,11 @@ namespace detail {
 template<typename Class, typename ReflectedType, typename... Args>
 struct reflected_member_call {
     std::tuple<Args...> params;
-    ReflectedType*      fnptr;
+    ReflectedType&      fnptr;
     bool                called;
 
     template<typename... _Args>
-    reflected_member_call(ReflectedType* fnptr, _Args&&... args) :
+    reflected_member_call(ReflectedType& fnptr, _Args&&... args) :
         params{std::forward<Args>(args)...},
         fnptr(fnptr),
         called(false)
@@ -50,7 +52,7 @@ private:
 
     template<typename ReturnType, size_t... ParamNum>
     ReturnType invoke(number_list<ParamNum...>) {
-        return fnptr->invoke<ReturnType>(
+        return fnptr.invoke<ReturnType>(
             std::get<ParamNum>(std::move(params))...
         );
     }
@@ -62,10 +64,10 @@ private:
 
 template<typename Class, typename ReflectedType>
 struct reflected_member_call<Class, ReflectedType> {
-    ReflectedType*      fnptr;
+    ReflectedType&      fnptr;
     bool                called;
 
-    reflected_member_call(ReflectedType* fnptr) :
+    reflected_member_call(ReflectedType& fnptr) :
         fnptr(fnptr),
         called(false)
     {}
@@ -90,7 +92,7 @@ struct reflected_member_call<Class, ReflectedType> {
 private:
     template<typename ReturnType>
     ReturnType invoke() {
-        return fnptr->invoke<ReturnType>();
+        return fnptr.invoke<ReturnType>();
     }
 };
 

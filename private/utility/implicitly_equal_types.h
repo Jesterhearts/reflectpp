@@ -26,8 +26,11 @@ struct implicitly_equal<typelist<T1, Set1...>, typelist<T2, Set2...>, true>
     : implicitly_equal<
         typelist<Set1...>,
         typelist<Set2...>,
-        std::is_convertible<T1, T2>::value
-        || std::is_constructible<T1, T2>::value>
+        std::is_convertible_v<T1, T2>
+        || std::is_constructible_v<T1, T2>
+        || (std::is_pointer_v<T1> && std::is_array_v<T2>)
+        || (std::is_array_v<T1> && std::is_pointer_v<T2>)
+    >
 {};
 
 template<
@@ -58,7 +61,10 @@ struct implicitly_equal<Type1, Type2, true>
     : implicitly_equal<
         typelist<>,
         typelist<>,
-        std::is_convertible<Type1, Type2>::value>
+        std::is_convertible_v<Type1, Type2>
+        || (std::is_pointer_v<Type1> && std::is_array_v<Type2>)
+        || (std::is_array_v<Type1> && std::is_pointer_v<Type2>)
+   >
 {};
 
 }

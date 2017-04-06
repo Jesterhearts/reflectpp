@@ -2,7 +2,6 @@
 
 #include "member_info.h"
 #include "member_names.h"
-#include "member_typemap.h"
 
 namespace reflect {
 namespace detail {

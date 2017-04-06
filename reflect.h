@@ -1,8 +1,9 @@
 #pragma once
 
 #include "private/exceptions.h"
-#include "private/class_reflection_info.h"
 #include "private/member_typemap.h"
+
+#include "private/macros/class_reflection_info.h"
 
 namespace reflect {
 #define REFLECT_PRIVATE_MEMBERS()   \
