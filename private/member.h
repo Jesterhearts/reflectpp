@@ -1,15 +1,19 @@
 #pragma once
 
-#include <utility>
+#include <string>
+#include <type_traits>
 
+#include "exceptions.h"
 #include "member_assigner_base.h"
 #include "member_assigner_static.h"
-
+#include "member_invoker.h"
 #include "reflected_instance.h"
 #include "reflected_member.h"
 
 #include "macros/member_info.h"
 #include "macros/member_names.h"
+
+#include "utility/type_info.h"
 
 namespace reflect {
 namespace detail {
@@ -21,7 +25,7 @@ template<
    typename TypeRepr,
    typename MemberType,
    MemberType Class::* Member>
-   struct member<Class, member_info<MemberType Class::*, Member>, TypeRepr>
+struct member<Class, member_info<MemberType Class::*, Member>, TypeRepr>
    : member_assigner<Class, reflected_member<Class, TypeRepr>, MemberType>
 {
    using Type = MemberType;
@@ -37,8 +41,8 @@ template<
       }
       else {
          throw invalid_requested_member_type{
-             std::string{"Cannot access non-static member: "}
-             +member_name<Info>::key()
+             std::string{ "Cannot access non-static member: " }
+             + member_name<Info>::key()
          };
       }
    }
@@ -62,8 +66,8 @@ template<
       }
       else {
          throw member_access_error{
-             std::string{"Cannot assign to non-static member: "}
-             +member_name<Info>::key()
+             std::string{ "Cannot assign to non-static member: " }
+             + member_name<Info>::key()
          };
       }
    }
@@ -71,38 +75,9 @@ template<
    template<typename _Type>
    void assign_impl(_Type&&, std::true_type) {
       throw invalid_assignment_to_const{
-          std::string{"Cannot assign to const member: "}
+          std::string{ "Cannot assign to const member: " }
           +member_name<Info>::key()
       };
-   }
-};
-
-template<
-   typename Class,
-   typename TypeRepr,
-   typename ReturnType,
-   typename... Args,
-   ReturnType(Class::* MemberFn)(Args...)>
-   struct member<Class, member_info<ReturnType(Class::*)(Args...), MemberFn>, TypeRepr>
-   : member_invoker<Class, reflected_member<Class, TypeRepr>, ReturnType, Args...>
-{
-   using Type = ReturnType(Args...);
-   using Info = member_info<ReturnType(Class::*)(Args...), MemberFn>;
-
-   ReturnType operator()(Args... args) override {
-      Class* instance = static_cast<reflected_instance<Class>*>(
-         static_cast<typename class_reflection_info<Class>::TypeInfo*>(this)
-      )->instance;
-
-      if (instance) {
-         return (instance->*MemberFn)(std::forward<Args>(args)...);
-      }
-      else {
-         throw invalid_function_call{
-             std::string{"Cannot call non-static member function without an instance: "}
-             +member_name<Info>::key()
-         };
-      }
    }
 };
 

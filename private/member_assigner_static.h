@@ -3,6 +3,7 @@
 #include <type_traits>
 
 #include "exceptions.h"
+#include "member_assigner_base.h"
 #include "reflected_member.h"
 
 #include "macros/member_names.h"
