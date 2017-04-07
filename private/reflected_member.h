@@ -3,8 +3,8 @@
 #include <utility>
 
 #include "exceptions.h"
-#include "member_assigner.h"
-#include "member_invoker.h"
+#include "member_assigner_base.h"
+#include "member_invoker_base.h"
 #include "reflected_member_call.h"
 
 namespace reflect {
