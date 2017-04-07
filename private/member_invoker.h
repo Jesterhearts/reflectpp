@@ -16,6 +16,8 @@
 namespace reflect {
 namespace detail {
 
+template<typename, typename, typename> struct member;
+
 template<
    typename Class,
    typename TypeRepr,
