@@ -25,9 +25,9 @@ struct NonCopyable {
 static int tally = 0;
 
 struct Foo {
-   int i;
-   bool b;
-   char c;
+   int i = 0;
+   bool b = false;
+   char c = '\0';
    NonCopyable ncmem{ 43 };
 
    void Bar() {
@@ -237,6 +237,17 @@ int main() {
 
       int* arrptr = reflectarrays["iarr10"];
       assert(arrptr == arrays.iarr10);
+
+      int (&arrref)[10] = reflectarrays["iarr10"];
+      assert(arrref == arrays.iarr10);
+
+      try {
+         int (&badarref)[2] = reflectarrays["iarr10"];
+         assert(false);
+      }
+      catch (const reflect::invalid_requested_member_type& e) {
+         std::cout << "caught: " << e.what() << std::endl;
+      }
    }
 
    constexpr int iters = 100000000;
