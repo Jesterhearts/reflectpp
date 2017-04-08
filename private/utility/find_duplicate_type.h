@@ -16,7 +16,7 @@ template<std::intptr_t _index, typename candidate>
 struct find_duplicate_type_impl<_index, candidate, typelist<>>
    : std::false_type
 {
-   constexpr static const std::intptr_t index = _index;
+   constexpr static const std::intptr_t id = _index;
 };
 
 template<std::intptr_t _index, typename candidate, typename... list>
@@ -26,7 +26,7 @@ struct find_duplicate_type_impl<
    typelist<candidate, list...>
 > : std::true_type
 {
-   constexpr static const std::intptr_t index = _index;
+   constexpr static const std::intptr_t id = _index;
 };
 
 template<std::intptr_t _index, typename candidate, typename test, typename... list>
@@ -47,7 +47,7 @@ struct find_duplicate_type_impl<
    typelist<member_info<candidate, value>, list...>
 > : std::true_type
 {
-   constexpr static const std::intptr_t index = _index;
+   constexpr static const std::intptr_t id = _index;
 };
 
 template<

@@ -7,13 +7,10 @@ namespace detail {
 
 template<typename> struct class_reflection_info;
 
-//TODO a bug in GCC prevents class_reflection_info<Class>::TypeInfo::get_type_id<T> from
-//  working in some cases, this is a workaround
-template<typename Class, typename type>
-using TypeInfo = find_duplicate_type<
-   type,
-   typename class_reflection_info<Class>::member_map::Types
->;
+template<typename Class, typename Type>
+constexpr auto get_type_info() noexcept {
+   return class_reflection_info<Class>::member_map::get_type_info<Type>();
+}
 
 template<typename Class>
 using FnTypes = typename class_reflection_info<Class>::member_map::FnTypes;

@@ -111,21 +111,15 @@ template<
    }
 
    template<typename type>
-   constexpr static auto get_type_id() {
-      return static_cast<TypeRepr>(
-         get_type_id_impl<type>()
-         );
+   constexpr static auto get_type_info() noexcept {
+      return get_type_info_impl<type>();
    }
 
 private:
    template<typename type>
-   constexpr static auto get_type_id_impl() {
+   constexpr static auto get_type_info_impl() noexcept {
       using TypeInfo = find_duplicate_type<type, Types>;
-      static_assert(
-         TypeInfo::value,
-         "Requested type is not a member type of this class"
-         );
-      return TypeInfo::index;
+      return TypeInfo{};
    }
 
    template<size_t Index = 0, size_t LLen = 0, size_t RLen = 0>

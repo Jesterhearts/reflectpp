@@ -88,20 +88,20 @@ struct Arrays {
 
 REFLECT_ENABLE(Arrays, iptr, iarr10);
 
-static_assert(reflect::detail::class_reflection_info<Foo>::member_map::get_type_id<int>() == 0, "");
-static_assert(reflect::detail::class_reflection_info<Foo>::member_map::get_type_id<bool>() == 1, "");
-static_assert(reflect::detail::class_reflection_info<Foo>::member_map::get_type_id<char>() == 2, "");
-static_assert(reflect::detail::class_reflection_info<Foo>::member_map::get_type_id<void()>() == 4, "");
+static_assert(reflect::detail::class_reflection_info<Foo>::member_map::get_type_info<int>().id == 0, "");
+static_assert(reflect::detail::class_reflection_info<Foo>::member_map::get_type_info<bool>().id == 1, "");
+static_assert(reflect::detail::class_reflection_info<Foo>::member_map::get_type_info<char>().id == 2, "");
+static_assert(reflect::detail::class_reflection_info<Foo>::member_map::get_type_info<void()>().id == 4, "");
 
 static_assert(reflect::detail::find_duplicate_type<bool, reflect::detail::typelist<bool>>::value, "");
 static_assert(reflect::detail::find_duplicate_type<bool, reflect::detail::typelist<int, bool>>::value, "");
 static_assert(!reflect::detail::find_duplicate_type<bool, reflect::detail::typelist<int>>::value, "");
 static_assert(!reflect::detail::find_duplicate_type<bool, reflect::detail::typelist<int, int>>::value, "");
 
-static_assert(reflect::detail::find_duplicate_type<bool, reflect::detail::typelist<bool, char, int>>::index == 0, "");
-static_assert(reflect::detail::find_duplicate_type<bool, reflect::detail::typelist<int, bool>>::index == 1, "");
-static_assert(reflect::detail::find_duplicate_type<bool, reflect::detail::typelist<int, char, bool>>::index == 2, "");
-static_assert(reflect::detail::find_duplicate_type<long, reflect::detail::typelist<int, char, bool>>::index == 3, "");
+static_assert(reflect::detail::find_duplicate_type<bool, reflect::detail::typelist<bool, char, int>>::id == 0, "");
+static_assert(reflect::detail::find_duplicate_type<bool, reflect::detail::typelist<int, bool>>::id == 1, "");
+static_assert(reflect::detail::find_duplicate_type<bool, reflect::detail::typelist<int, char, bool>>::id == 2, "");
+static_assert(reflect::detail::find_duplicate_type<long, reflect::detail::typelist<int, char, bool>>::id == 3, "");
 
 static_assert(reflect::detail::typelist_to_numberlist<reflect::detail::typeset<bool, int, bool>>::length == 2, "");
 static_assert(reflect::detail::typelist_to_numberlist<reflect::detail::typeset<bool, bool, int>>::length == 2, "");
@@ -138,6 +138,9 @@ int main() {
          std::cout << "caught: " << e.what() << std::endl;
       }
 
+      reflectfoo["i"] = std::size_t{ 0 };
+      assert(f.i == 0);
+
       try {
          reflectfoo["i"] = std::string();
          assert(false);
@@ -147,7 +150,8 @@ int main() {
       }
 
       int i = reflectfoo["Baz"]();
-      assert(i == 10);
+      assert(i == f.i);
+
       reflectfoo["Baz"]();
 
       int x = reflectfoo["Baz2"](42);
@@ -161,6 +165,9 @@ int main() {
       catch (const reflect::invalid_function_call& e) {
          std::cout << "caught: " << e.what() << std::endl;
       }
+
+      std::size_t sizei = reflectfoo["i"];
+      assert(f.i == sizei);
 
       try {
          std::string s = reflectfoo["i"];

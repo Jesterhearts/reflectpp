@@ -18,12 +18,12 @@ struct reflected_member {
 
    template<typename Type, typename = std::enable_if_t<!std::is_pointer_v<Type>>>
    operator Type&() {
-      using TypeInfo = TypeInfo<Class, Type>;
+      constexpr auto type_info = get_type_info<Class, Type>();
       using Options = decltype(
          filter_compatible_types<Type>(ObjTypes<Class>())
       );
 
-      if (TypeInfo::value && TypeInfo::index == get_type()) {
+      if (type_info.value && type_info.id == get_type()) {
          return static_cast<member_assigner<Class, ThisType, Type>&>(
             *this
          ).get();
@@ -34,12 +34,12 @@ struct reflected_member {
 
    template<typename Type, typename = std::enable_if_t<std::is_pointer_v<Type>>>
    operator Type() {
-      using TypeInfo = TypeInfo<Class, Type>;
+      constexpr auto type_info = get_type_info<Class, Type>();
       using Options = decltype(
          filter_compatible_types<Type>(ObjTypes<Class>())
       );
 
-      if (TypeInfo::value && TypeInfo::index == get_type()) {
+      if (type_info.value && type_info.id == get_type()) {
          return static_cast<member_assigner<Class, ThisType, Type>&>(
             *this
          ).get();
@@ -50,12 +50,12 @@ struct reflected_member {
 
    template<typename Type>
    void operator=(Type&& arg) {
-      using TypeInfo = TypeInfo<Class, Type>;
+      constexpr auto type_info = get_type_info<Class, Type>();
       using Options = decltype(
          filter_compatible_types<Type>(ObjTypes<Class>())
       );
 
-      if (TypeInfo::value && TypeInfo::index == get_type()) {
+      if (type_info.value && type_info.id == get_type()) {
          return static_cast<member_assigner<Class, ThisType, Type>&>(
             *this
          ) = std::forward<Type>(arg);
@@ -67,12 +67,12 @@ struct reflected_member {
    template<typename ReturnType, typename... Args>
    ReturnType invoke(Args&&... args) {
       using Type = ReturnType(Args&&...);
-      using TypeInfo = TypeInfo<Class, Type>;
+      constexpr auto type_info = get_type_info<Class, Type>();
       using Options = decltype(
          filter_compatible_types<Type>(FnTypes<Class>())
       );
 
-      if (TypeInfo::value && TypeInfo::index == get_type()) {
+      if (type_info.value && type_info.id == get_type()) {
          return static_cast<ReturnType>(
             static_cast<
             member_invoker<Class, ThisType, ReturnType, Args&&...>&
@@ -106,9 +106,9 @@ private:
          typelist<OptionRT(OptionArgs...), Options...>,
          Args&&... args)
    {
-      using TypeInfo = TypeInfo<Class, OptionRT(OptionArgs...)>;
+      constexpr auto type_info = get_type_info<Class, OptionRT(OptionArgs...)>();
 
-      if (TypeInfo::index == get_type()) {
+      if (type_info.id == get_type()) {
          return static_cast<ReturnType>(
             static_cast<
             member_invoker<Class, ThisType, OptionRT, OptionArgs...>&
@@ -132,9 +132,9 @@ private:
    template<typename Type, typename Option, typename... Options>
    void assign(typelist<Option, Options...>, Type&& arg)
    {
-      using TypeInfo = TypeInfo<Class, Option>;
+      constexpr auto type_info = get_type_info<Class, Option>();
 
-      if (TypeInfo::index == get_type()) {
+      if (type_info.id == get_type()) {
          return static_cast<member_assigner<Class, ThisType, Option>&>(
             *this
          ) = std::forward<Type>(arg);
@@ -156,9 +156,9 @@ private:
       typename... Options>
       Type get(typelist<Option, Options...>)
    {
-      using TypeInfo = TypeInfo<Class, Option>;
+      constexpr auto type_info = get_type_info<Class, Option>();
 
-      if (TypeInfo::index == get_type()) {
+      if (type_info.id == get_type()) {
          return (Type) static_cast<member_assigner<Class, ThisType, Option>&>(
             *this
          ).get();
