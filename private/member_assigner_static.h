@@ -25,7 +25,7 @@ struct member<Class, member_info<MemberType*, Member>, TypeRepr>
    using Type = MemberType;
    using Info = member_info<MemberType*, Member>;
 
-   Type& get() override {
+   Type& get() override final {
       return *Member;
    }
 
@@ -50,7 +50,7 @@ struct member<Class, member_info<MemberType*, Member>, TypeRepr>
       };
    }
 
-   std::intptr_t get_type() const override {
+   std::intptr_t get_type() const override final {
       return get_type_info<Class, Type>().id;
    }
 };

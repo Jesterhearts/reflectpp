@@ -31,7 +31,7 @@ struct member<Class, member_info<MemberType Class::*, Member>, TypeRepr>
    using Type = MemberType;
    using Info = member_info<MemberType Class::*, Member>;
 
-   Type& get() override {
+   Type& get() override final {
       Class* instance = static_cast<reflected_instance<Class>*>(
          static_cast<typename class_reflection_info<Class>::member_map*>(this)
       )->instance;
@@ -80,7 +80,7 @@ struct member<Class, member_info<MemberType Class::*, Member>, TypeRepr>
       };
    }
 
-   std::intptr_t get_type() const override {
+   std::intptr_t get_type() const override final {
       return get_type_info<Class, Type>().id;
    }
 };
