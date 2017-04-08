@@ -88,10 +88,10 @@ struct Arrays {
 
 REFLECT_ENABLE(Arrays, iptr, iarr10);
 
-static_assert(reflect::detail::class_reflection_info<Foo>::TypeInfo::get_type_id<int>() == 0, "");
-static_assert(reflect::detail::class_reflection_info<Foo>::TypeInfo::get_type_id<bool>() == 1, "");
-static_assert(reflect::detail::class_reflection_info<Foo>::TypeInfo::get_type_id<char>() == 2, "");
-static_assert(reflect::detail::class_reflection_info<Foo>::TypeInfo::get_type_id<void()>() == 4, "");
+static_assert(reflect::detail::class_reflection_info<Foo>::member_map::get_type_id<int>() == 0, "");
+static_assert(reflect::detail::class_reflection_info<Foo>::member_map::get_type_id<bool>() == 1, "");
+static_assert(reflect::detail::class_reflection_info<Foo>::member_map::get_type_id<char>() == 2, "");
+static_assert(reflect::detail::class_reflection_info<Foo>::member_map::get_type_id<void()>() == 4, "");
 
 static_assert(reflect::detail::find_duplicate_type<bool, reflect::detail::typelist<bool>>::value, "");
 static_assert(reflect::detail::find_duplicate_type<bool, reflect::detail::typelist<int, bool>>::value, "");

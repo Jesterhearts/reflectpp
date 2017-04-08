@@ -49,6 +49,10 @@ struct member<Class, member_info<MemberType*, Member>, TypeRepr>
           + member_name<Info>::key()
       };
    }
+
+   std::intptr_t get_type() const override {
+      return TypeInfo<Class, Type>::index;
+   }
 };
 }
 }

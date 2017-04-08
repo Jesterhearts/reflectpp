@@ -15,17 +15,17 @@ namespace detail {
    namespace detail {                              \
    template<>                                      \
    struct class_reflection_info<Class> {           \
-      using TypeInfo = member_typemap<             \
+      using member_map = member_typemap<           \
          Class,                                    \
          REFLECT_LIST_MEMBERS(Class, __VA_ARGS__)  \
       >;                                           \
                                                    \
       static auto reflect(Class& instance) {       \
-         return TypeInfo{ instance };              \
+         return member_map{ instance };            \
       }                                            \
                                                    \
       static auto reflect() {                      \
-         return TypeInfo{};                        \
+         return member_map{};                      \
       }                                            \
    };                                              \
    }                                               \

@@ -13,7 +13,8 @@ namespace detail {
 template<typename Class, typename TypeRepr>
 struct reflected_member {
    using ThisType = reflected_member<Class, TypeRepr>;
-   const TypeRepr tag;
+
+   reflected_member() = default;
 
    template<typename Type, typename = std::enable_if_t<!std::is_pointer_v<Type>>>
    operator Type&() {
@@ -22,7 +23,7 @@ struct reflected_member {
          filter_compatible_types<Type>(ObjTypes<Class>())
       );
 
-      if (TypeInfo::value && TypeInfo::index == tag) {
+      if (TypeInfo::value && TypeInfo::index == get_type()) {
          return static_cast<member_assigner<Class, ThisType, Type>&>(
             *this
          ).get();
@@ -38,7 +39,7 @@ struct reflected_member {
          filter_compatible_types<Type>(ObjTypes<Class>())
       );
 
-      if (TypeInfo::value && TypeInfo::index == tag) {
+      if (TypeInfo::value && TypeInfo::index == get_type()) {
          return static_cast<member_assigner<Class, ThisType, Type>&>(
             *this
          ).get();
@@ -54,7 +55,7 @@ struct reflected_member {
          filter_compatible_types<Type>(ObjTypes<Class>())
       );
 
-      if (TypeInfo::value && TypeInfo::index == tag) {
+      if (TypeInfo::value && TypeInfo::index == get_type()) {
          return static_cast<member_assigner<Class, ThisType, Type>&>(
             *this
          ) = std::forward<Type>(arg);
@@ -71,7 +72,7 @@ struct reflected_member {
          filter_compatible_types<Type>(FnTypes<Class>())
       );
 
-      if (TypeInfo::value && TypeInfo::index == tag) {
+      if (TypeInfo::value && TypeInfo::index == get_type()) {
          return static_cast<ReturnType>(
             static_cast<
             member_invoker<Class, ThisType, ReturnType, Args&&...>&
@@ -107,7 +108,7 @@ private:
    {
       using TypeInfo = TypeInfo<Class, OptionRT(OptionArgs...)>;
 
-      if (TypeInfo::index == tag) {
+      if (TypeInfo::index == get_type()) {
          return static_cast<ReturnType>(
             static_cast<
             member_invoker<Class, ThisType, OptionRT, OptionArgs...>&
@@ -133,7 +134,7 @@ private:
    {
       using TypeInfo = TypeInfo<Class, Option>;
 
-      if (TypeInfo::index == tag) {
+      if (TypeInfo::index == get_type()) {
          return static_cast<member_assigner<Class, ThisType, Option>&>(
             *this
          ) = std::forward<Type>(arg);
@@ -157,7 +158,7 @@ private:
    {
       using TypeInfo = TypeInfo<Class, Option>;
 
-      if (TypeInfo::index == tag) {
+      if (TypeInfo::index == get_type()) {
          return (Type) static_cast<member_assigner<Class, ThisType, Option>&>(
             *this
          ).get();
@@ -165,6 +166,8 @@ private:
 
       return get<Type>(typelist<Options...>());
    }
+
+   virtual std::intptr_t get_type() const = 0;
 
    constexpr reflected_member(const reflected_member&) = default;
    constexpr reflected_member(reflected_member&&) = default;

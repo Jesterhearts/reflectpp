@@ -12,14 +12,14 @@ template<typename> struct class_reflection_info;
 template<typename Class, typename type>
 using TypeInfo = find_duplicate_type<
    type,
-   typename class_reflection_info<Class>::TypeInfo::Types
+   typename class_reflection_info<Class>::member_map::Types
 >;
 
 template<typename Class>
-using FnTypes = typename class_reflection_info<Class>::TypeInfo::FnTypes;
+using FnTypes = typename class_reflection_info<Class>::member_map::FnTypes;
 
 template<typename Class>
-using ObjTypes = typename class_reflection_info<Class>::TypeInfo::ObjTypes;
+using ObjTypes = typename class_reflection_info<Class>::member_map::ObjTypes;
 
 }
 }

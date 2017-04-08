@@ -9,27 +9,27 @@ namespace detail {
 
 template<typename MemberType, MemberType> struct member_info;
 
-template<size_t, typename, typename>
+template<std::intptr_t, typename, typename>
 struct find_duplicate_type_impl;
 
-template<size_t _index, typename candidate>
+template<std::intptr_t _index, typename candidate>
 struct find_duplicate_type_impl<_index, candidate, typelist<>>
    : std::false_type
 {
-   constexpr static const size_t index = _index;
+   constexpr static const std::intptr_t index = _index;
 };
 
-template<size_t _index, typename candidate, typename... list>
+template<std::intptr_t _index, typename candidate, typename... list>
 struct find_duplicate_type_impl<
    _index,
    candidate,
    typelist<candidate, list...>
 > : std::true_type
 {
-   constexpr static const size_t index = _index;
+   constexpr static const std::intptr_t index = _index;
 };
 
-template<size_t _index, typename candidate, typename test, typename... list>
+template<std::intptr_t _index, typename candidate, typename test, typename... list>
 struct find_duplicate_type_impl<
    _index,
    candidate,
@@ -40,18 +40,18 @@ struct find_duplicate_type_impl<
 template<typename type, typename _typelist>
 struct find_duplicate_type : find_duplicate_type_impl<0, type, _typelist> {};
 
-template<size_t _index, typename candidate, candidate value, typename... list>
+template<std::intptr_t _index, typename candidate, candidate value, typename... list>
 struct find_duplicate_type_impl<
    _index,
    candidate,
    typelist<member_info<candidate, value>, list...>
 > : std::true_type
 {
-   constexpr static const size_t index = _index;
+   constexpr static const std::intptr_t index = _index;
 };
 
 template<
-   size_t _index,
+   std::intptr_t _index,
    typename candidate,
    typename test,
    test value,

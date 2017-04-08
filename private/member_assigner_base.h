@@ -7,7 +7,6 @@ namespace detail {
 
 template<typename Class, typename Base, typename Type, typename = void>
 struct member_assigner : Base {
-   constexpr member_assigner() noexcept : Base{ TypeInfo<Class, Type>::index } {}
    static_assert(std::is_reference_v<Type&>, "");
    virtual Type& get() = 0;
 };
@@ -23,8 +22,6 @@ struct member_assigner<
    && (std::is_move_assignable<Type>::value
       || std::is_move_constructible<Type>::value)>
 > : Base {
-   constexpr member_assigner() noexcept : Base{ TypeInfo<Class, Type>::index } {}
-
    virtual Type& get() = 0;
    virtual void operator=(const Type& type) = 0;
    virtual void operator=(Type&& type) = 0;
@@ -41,8 +38,6 @@ struct member_assigner<
    && (!std::is_move_assignable<Type>::value
       && !std::is_move_constructible<Type>::value)>
 > : Base {
-   constexpr member_assigner() noexcept : Base{ TypeInfo<Class, Type>::index } {}
-
    virtual Type& get() = 0;
    virtual void operator=(const Type& type) = 0;
 };
@@ -58,8 +53,6 @@ struct member_assigner<
    && (std::is_move_assignable<Type>::value
       || std::is_move_constructible<Type>::value)>
 > : Base {
-   constexpr member_assigner() noexcept : Base{ TypeInfo<Class, Type>::index } {}
-
    virtual Type& get() = 0;
    virtual void operator=(Type&& type) = 0;
 };

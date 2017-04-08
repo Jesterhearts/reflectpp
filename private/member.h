@@ -33,7 +33,7 @@ struct member<Class, member_info<MemberType Class::*, Member>, TypeRepr>
 
    Type& get() override {
       Class* instance = static_cast<reflected_instance<Class>*>(
-         static_cast<typename class_reflection_info<Class>::TypeInfo*>(this)
+         static_cast<typename class_reflection_info<Class>::member_map*>(this)
       )->instance;
 
       if (instance) {
@@ -58,7 +58,7 @@ struct member<Class, member_info<MemberType Class::*, Member>, TypeRepr>
    template<typename _Type>
    void assign_impl(_Type&& type, std::false_type) {
       Class* instance = static_cast<reflected_instance<Class>*>(
-         static_cast<typename class_reflection_info<Class>::TypeInfo*>(this)
+         static_cast<typename class_reflection_info<Class>::member_map*>(this)
       )->instance;
 
       if (instance) {
@@ -78,6 +78,10 @@ struct member<Class, member_info<MemberType Class::*, Member>, TypeRepr>
           std::string{ "Cannot assign to const member: " }
           +member_name<Info>::key()
       };
+   }
+
+   std::intptr_t get_type() const override {
+      return TypeInfo<Class, Type>::index;
    }
 };
 

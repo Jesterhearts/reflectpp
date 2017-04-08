@@ -32,7 +32,7 @@ struct member<Class, member_info<ReturnType(Class::*)(Args...), MemberFn>, TypeR
 
    ReturnType operator()(Args... args) override {
       Class* instance = static_cast<reflected_instance<Class>*>(
-         static_cast<typename class_reflection_info<Class>::TypeInfo*>(this)
+         static_cast<typename class_reflection_info<Class>::member_map*>(this)
       )->instance;
 
       if (instance) {
@@ -44,6 +44,10 @@ struct member<Class, member_info<ReturnType(Class::*)(Args...), MemberFn>, TypeR
              + member_name<Info>::key()
          };
       }
+   }
+
+   std::intptr_t get_type() const override {
+      return TypeInfo<Class, Type>::index;
    }
 };
 
