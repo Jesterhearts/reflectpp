@@ -27,7 +27,7 @@ template<typename MemberInfo> struct member_name;
    template<>                                               \
    struct member_name<REFLECT_MEMBER_INFO(Class, Member)> { \
       constexpr static                                      \
-      decltype(BOOST_PP_STRINGIZE(Member)) key() {          \
+      decltype(BOOST_PP_STRINGIZE(Member)) key() noexcept { \
          return BOOST_PP_STRINGIZE(Member);                 \
       }                                                     \
    };                                                       \

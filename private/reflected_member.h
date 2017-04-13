@@ -167,7 +167,7 @@ private:
       return get<Type>(typelist<Options...>());
    }
 
-   virtual std::intptr_t get_type() const = 0;
+   virtual std::intptr_t get_type() const noexcept = 0;
 
    constexpr reflected_member(const reflected_member&) = default;
    constexpr reflected_member(reflected_member&&) = default;

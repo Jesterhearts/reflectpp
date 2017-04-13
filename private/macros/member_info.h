@@ -9,7 +9,7 @@
 namespace reflect {
 namespace detail {
 
-template<typename MemberType, MemberType> struct member_info {};
+template<typename MemberType, MemberType> struct member_info;
 
 #define MEMBER_INFO(Class, Member)                       \
    member_info<decltype(&Class::Member), &Class::Member>

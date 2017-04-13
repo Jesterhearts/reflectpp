@@ -80,7 +80,7 @@ struct member<Class, member_info<MemberType Class::*, Member>, TypeRepr>
       };
    }
 
-   std::intptr_t get_type() const override final {
+   std::intptr_t get_type() const noexcept override final {
       return get_type_info<Class, Type>().id;
    }
 };
