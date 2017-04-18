@@ -1,6 +1,9 @@
 [submodule "submodules/Catch"]
-	url = https://github.com/philsquared/Catch.git
+   path = submodules/Catch
+   url = https://github.com/philsquared/Catch.git
 [submodule "submodules/boost/config"]
-	url = https://github.com/boostorg/config.git
+   path = submodules/boost/config
+   url = https://github.com/boostorg/config.git
 [submodule "submodules/boost/preprocessor"]
-	url = https://github.com/boostorg/preprocessor.git
+   path = submodules/boost/preprocessor
+   url = https://github.com/boostorg/preprocessor.git
