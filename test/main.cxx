@@ -92,96 +92,96 @@ struct Arrays {
 REFLECT_ENABLE(Arrays, iptr, iarr10);
 
 SCENARIO("members can be written to", "[reflection]") {
-GIVEN("a reflected object") {
-   Foo f{};
-   auto reflected = reflect::reflect(f);
+   GIVEN("a reflected object") {
+      Foo f{};
+      auto reflected = reflect::reflect(f);
 
-   REQUIRE(f.i == 0);
-   REQUIRE(f.b == false);
-   REQUIRE(f.c == 0);
-   REQUIRE(f.ncmem.m == 0);
+      REQUIRE(f.i == 0);
+      REQUIRE(f.b == false);
+      REQUIRE(f.c == 0);
+      REQUIRE(f.ncmem.m == 0);
 
-WHEN("an int literal is assigned to an int member") {
-   CHECK_NOTHROW(reflected["i"] = 10);
+      WHEN("an int literal is assigned to an int member") {
+         CHECK_NOTHROW(reflected["i"] = 10);
 
-THEN("the value is changed") {
-   CHECK(10 == f.i);
-}
-}
+      THEN("the value is changed") {
+         CHECK(10 == f.i);
+      }
+      }
 
-WHEN("an int is assigned to an int member") {
-   constexpr int ten = 10;
-   CHECK_NOTHROW(reflected["i"] = ten);
+      WHEN("an int is assigned to an int member") {
+         constexpr int ten = 10;
+         CHECK_NOTHROW(reflected["i"] = ten);
 
-THEN("the value is changed") {
-   CHECK(ten == f.i);
-}
-}
+      THEN("the value is changed") {
+         CHECK(ten == f.i);
+      }
+      }
 
-WHEN("a char is assigned to an int member") {
-   constexpr char c = 'c';
-   CHECK_NOTHROW(reflected["i"] = c);
+      WHEN("a char is assigned to an int member") {
+         constexpr char c = 'c';
+         CHECK_NOTHROW(reflected["i"] = c);
 
-THEN("the value is changed") {
-   CHECK(c == f.i);
-}
-}
+      THEN("the value is changed") {
+         CHECK(c == f.i);
+      }
+      }
 
-WHEN("a size_t is assigned to an int member") {
-   constexpr std::size_t eleven = 11;
-   CHECK_NOTHROW(reflected["i"] = eleven);
+      WHEN("a size_t is assigned to an int member") {
+         constexpr std::size_t eleven = 11;
+         CHECK_NOTHROW(reflected["i"] = eleven);
 
-THEN("the value is changed") {
-   CHECK(eleven == f.i);
-}
-}
+      THEN("the value is changed") {
+         CHECK(eleven == f.i);
+      }
+      }
 
-WHEN("a char is assigned to a char member") {
-   constexpr char c = 'c';
-   CHECK_NOTHROW(reflected["c"] = c);
+      WHEN("a char is assigned to a char member") {
+         constexpr char c = 'c';
+         CHECK_NOTHROW(reflected["c"] = c);
 
-THEN("the value is changed") {
-   CHECK(c == f.c);
-}
-}
+      THEN("the value is changed") {
+         CHECK(c == f.c);
+      }
+      }
 
-WHEN("a string is assigned to a char member") {
-THEN("an exception is thrown") {
-   static const std::string s = "hello world";
-   CHECK_THROWS_AS(reflected["c"] = s, const reflect::invalid_assignment_type&);
-}
-}
+      WHEN("a string is assigned to a char member") {
+      THEN("an exception is thrown") {
+         static const std::string s = "hello world";
+         CHECK_THROWS_AS(reflected["c"] = s, const reflect::invalid_assignment_type&);
+      }
+      }
 
-WHEN("a string is assigned to a function member") {
-THEN("an exception is thrown") {
-   static const std::string s = "hello world";
-   CHECK_THROWS_AS(reflected["Bar"] = s, const reflect::invalid_assignment_type&);
-}
-}
-}
+      WHEN("a string is assigned to a function member") {
+      THEN("an exception is thrown") {
+         static const std::string s = "hello world";
+         CHECK_THROWS_AS(reflected["Bar"] = s, const reflect::invalid_assignment_type&);
+      }
+      }
+   }
 
-GIVEN("a reflected static instance with non-static members") {
-   auto reflected = reflect::reflect<Foo>();
+   GIVEN("a reflected static instance with non-static members") {
+      auto reflected = reflect::reflect<Foo>();
 
-WHEN("a non-static member is accessed") {
-THEN("an exception is thrown") {
-   CHECK_THROWS_AS(reflected["i"] = 0, const reflect::member_access_error&);
-}
-}
-}
+      WHEN("a non-static member is accessed") {
+      THEN("an exception is thrown") {
+         CHECK_THROWS_AS(reflected["i"] = 0, const reflect::member_access_error&);
+      }
+      }
+   }
 
-GIVEN("a reflected static instance with static members") {
-   auto reflected = reflect::reflect<Static>();
-   REQUIRE(Static::abc == 0);
+   GIVEN("a reflected static instance with static members") {
+      auto reflected = reflect::reflect<Static>();
+      REQUIRE(Static::abc == 0);
 
-WHEN("a static member is accessed") {
-   CHECK_NOTHROW(reflected["abc"] = 10);
+      WHEN("a static member is accessed") {
+         CHECK_NOTHROW(reflected["abc"] = 10);
 
-THEN("the value is changed") {
-   CHECK(10 == Static::abc);
-}
-}
-}
+      THEN("the value is changed") {
+         CHECK(10 == Static::abc);
+      }
+      }
+   }
 }
 
 /*
