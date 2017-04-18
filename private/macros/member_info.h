@@ -1,10 +1,10 @@
 #pragma once
 
-#include <boost/preprocessor/seq/for_each.hpp>
-#include <boost/preprocessor/seq/pop_front.hpp>
+#include "dependencies/boost/preprocessor/seq/for_each.hpp"
+#include "dependencies/boost/preprocessor/seq/pop_front.hpp"
 
-#include <boost/preprocessor/variadic/to_seq.hpp>
-#include <boost/preprocessor/variadic/elem.hpp>
+#include "dependencies/boost/preprocessor/variadic/to_seq.hpp"
+#include "dependencies/boost/preprocessor/variadic/elem.hpp"
 
 namespace reflect {
 namespace detail {
