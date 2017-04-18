@@ -3,10 +3,13 @@
 #include <cmath>
 #include <iostream>
 
+#include "dependencies/Catch/catch_with_main.hpp"
+
 #include "../reflect.h"
 
+
 struct Perfect {
-   int m;
+   int m = 0;
 
    Perfect(const Perfect&) = delete;
    Perfect(Perfect&&) = delete;
@@ -28,7 +31,7 @@ struct Foo {
    int i = 0;
    bool b = false;
    char c = '\0';
-   NonCopyable ncmem{ 43 };
+   NonCopyable ncmem{ 0 };
 
    void Bar() {
       std::cout << "Bar called" << std::endl;
@@ -88,6 +91,70 @@ struct Arrays {
 
 REFLECT_ENABLE(Arrays, iptr, iarr10);
 
+SCENARIO("members can be written to", "[reflection]") {
+GIVEN("a reflected object") {
+   Foo f{};
+   auto reflectfoo = reflect::reflect(f);
+
+   REQUIRE(f.i == 0);
+   REQUIRE(f.b == false);
+   REQUIRE(f.c == 0);
+   REQUIRE(f.ncmem.m == 0);
+
+WHEN("an int is assigned to an int member") {
+   constexpr int ten = 10;
+   CHECK_NOTHROW(reflectfoo["i"] = ten);
+
+THEN("the value is changed") {
+   CHECK(ten == f.i);
+}
+}
+
+WHEN("a char is assigned to an int member") {
+   constexpr char c = 'c';
+   CHECK_NOTHROW(reflectfoo["i"] = c);
+
+THEN("the value is changed") {
+   CHECK(c == f.i);
+}
+}
+
+WHEN("a size_t is assigned to an int member") {
+   constexpr std::size_t eleven = 11;
+   CHECK_NOTHROW(reflectfoo["i"] = eleven);
+
+THEN("the value is changed") {
+   CHECK(eleven == f.i);
+}
+}
+
+WHEN("a char is assigned to a char member") {
+   constexpr char c = 'c';
+   CHECK_NOTHROW(reflectfoo["c"] = c);
+
+THEN("the value is changed") {
+   CHECK(c == f.c);
+}
+}
+
+WHEN("a string is assigned to a char member") {
+THEN("an exception is thrown") {
+   static const std::string s = "hello world";
+   CHECK_THROWS_AS(reflectfoo["c"] = s, const reflect::invalid_assignment_type&);
+}
+}
+
+WHEN("a string is assigned to a function member") {
+THEN("an exception is thrown") {
+   static const std::string s = "hello world";
+   CHECK_THROWS_AS(reflectfoo["Bar"] = s, const reflect::invalid_assignment_type&);
+}
+}
+
+}
+}
+
+/*
 int main() {
 
    Foo f{};
@@ -272,3 +339,4 @@ int main() {
 
    std::cin.ignore();
 }
+//*/
