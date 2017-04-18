@@ -3,7 +3,7 @@
 #include <cmath>
 #include <iostream>
 
-#include <reflect.h>
+#include "../reflect.h"
 
 struct Perfect {
    int m;
