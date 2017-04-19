@@ -88,6 +88,8 @@ struct reflected_member {
       return{ *this, std::forward<Args>(args)... };
    }
 
+   virtual std::intptr_t get_type() const noexcept = 0;
+
 private:
    template<typename ReturnType, typename... Args>
    ReturnType invoke(typelist<>, Args&&... args) {
@@ -135,9 +137,12 @@ private:
       constexpr auto type_info = get_type_info<Class, Option>();
 
       if (type_info.id == get_type()) {
+         #pragma warning(push)
+         #pragma warning(disable: 4800 4267)
          return static_cast<member_assigner<Class, ThisType, Option>&>(
             *this
          ) = std::forward<Type>(arg);
+         #pragma warning(pop)
       }
 
       return assign(typelist<Options...>(), std::forward<Type>(arg));
@@ -166,8 +171,6 @@ private:
 
       return get<Type>(typelist<Options...>());
    }
-
-   virtual std::intptr_t get_type() const noexcept = 0;
 
    constexpr reflected_member(const reflected_member&) = default;
    constexpr reflected_member(reflected_member&&) = default;
