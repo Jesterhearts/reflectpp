@@ -63,6 +63,7 @@ REFLECT_ENABLE(Foo, i, string, ncmem, Bar, Baz, Baz2, Perf, NC, Tally)
 
 struct Static {
    static int abc;
+   static std::string string;
 
    static void Funky() {
    }
@@ -80,9 +81,10 @@ struct Static {
 };
 
 int Static::abc = 0;
+std::string Static::string;
 
 #pragma warning(suppress: 4003)
-REFLECT_ENABLE(Static, abc, Funky, FunkyParams, FunkyReturns, FunkyPassthrough);
+REFLECT_ENABLE(Static, abc, string, Funky, FunkyParams, FunkyReturns, FunkyPassthrough);
 
 struct Const {
    const static int _static = 10;
@@ -111,19 +113,19 @@ TEST_CASE("basic member access", "[reflection][access][basic]") {
    auto reflected = reflect::reflect(f);
 
    SECTION("member pod variable access") {
-      CHECK_NOTHROW(reflected["i"].get_type());
+      REQUIRE_NOTHROW(reflected["i"].get_type());
    }
 
    SECTION("member object variable access") {
-      CHECK_NOTHROW(reflected["string"].get_type());
+      REQUIRE_NOTHROW(reflected["string"].get_type());
    }
 
    SECTION("member function access") {
-      CHECK_NOTHROW(reflected["Bar"].get_type());
+      REQUIRE_NOTHROW(reflected["Bar"].get_type());
    }
 
    SECTION("non-existent member access") {
-      CHECK_THROWS_AS(
+      REQUIRE_THROWS_AS(
          reflected["invalid identifier"],
          const reflect::member_access_error&
       );
@@ -136,11 +138,11 @@ TEST_CASE("static member access", "[reflection][access][static]") {
    auto reflected = reflect::reflect(s);
 
    SECTION("static variable access") {
-      CHECK_NOTHROW(reflected["abc"].get_type());
+      REQUIRE_NOTHROW(reflected["abc"].get_type());
    }
 
    SECTION("static function access") {
-      CHECK_NOTHROW(reflected["Funky"].get_type());
+      REQUIRE_NOTHROW(reflected["Funky"].get_type());
    }
 
 }
@@ -150,11 +152,11 @@ TEST_CASE("const member access", "[reflection][access][const]") {
    auto reflected = reflect::reflect(const_);
 
    SECTION("const member variable access") {
-      CHECK_NOTHROW(reflected["_const"].get_type());
+      REQUIRE_NOTHROW(reflected["_const"].get_type());
    }
 
    SECTION("static const member variable access") {
-      CHECK_NOTHROW(reflected["_static"].get_type());
+      REQUIRE_NOTHROW(reflected["_static"].get_type());
    }
 
 }
@@ -164,15 +166,15 @@ TEST_CASE("array member access", "[reflection][access][arrays]") {
    auto reflected = reflect::reflect(arrays);
 
    SECTION("pointer member access") {
-      CHECK_NOTHROW(reflected["iptr"].get_type());
+      REQUIRE_NOTHROW(reflected["iptr"].get_type());
    }
 
    SECTION("dynamic array member access") {
-      CHECK_NOTHROW(reflected["iarr"].get_type());
+      REQUIRE_NOTHROW(reflected["iarr"].get_type());
    }
 
    SECTION("sized array member access") {
-      CHECK_NOTHROW(reflected["iarr10"].get_type());
+      REQUIRE_NOTHROW(reflected["iarr10"].get_type());
    }
 
 }
@@ -180,22 +182,22 @@ TEST_CASE("array member access", "[reflection][access][arrays]") {
 TEST_CASE("empty object member access", "[reflection][access][empty]") {
    SECTION("non static member access") {
       auto reflected = reflect::reflect<Foo>();
-      CHECK_NOTHROW(reflected["i"].get_type());
+      REQUIRE_NOTHROW(reflected["i"].get_type());
    }
 
    SECTION("static member access") {
       auto reflected = reflect::reflect<Static>();
-      CHECK_NOTHROW(reflected["abc"].get_type());
+      REQUIRE_NOTHROW(reflected["abc"].get_type());
    }
 
    SECTION("static function access") {
       auto reflected = reflect::reflect<Static>();
-      CHECK_NOTHROW(reflected["Funky"].get_type());
+      REQUIRE_NOTHROW(reflected["Funky"].get_type());
    }
 
    SECTION("non-existent member access") {
       auto reflected = reflect::reflect<Static>();
-      CHECK_THROWS_AS(
+      REQUIRE_THROWS_AS(
          reflected["invalid identifier"],
          const reflect::member_access_error&
       );
@@ -203,51 +205,51 @@ TEST_CASE("empty object member access", "[reflection][access][empty]") {
 
 }
 
-TEST_CASE("basic assignment", "[reflection][assignment][basic]") {
+TEST_CASE("basic member assignment", "[reflection][assignment][basic]") {
    Foo f{};
    auto reflected = reflect::reflect(f);
 
    SECTION("pod member assignment") {
       REQUIRE(f.i != 10);
-      CHECK_NOTHROW(reflected["i"] = 10);
-      CHECK(f.i == 10);
+      REQUIRE_NOTHROW(reflected["i"] = 10);
+      REQUIRE(f.i == 10);
    }
 
    SECTION("pod member assignment from constexpr var") {
       constexpr int ten = 10;
       REQUIRE(f.i != ten);
-      CHECK_NOTHROW(reflected["i"] = ten);
-      CHECK(f.i == ten);
+      REQUIRE_NOTHROW(reflected["i"] = ten);
+      REQUIRE(f.i == ten);
    }
 
    SECTION("pod member assignment from var") {
       int ten = 10;
       REQUIRE(f.i != ten);
-      CHECK_NOTHROW(reflected["i"] = ten);
-      CHECK(f.i == ten);
+      REQUIRE_NOTHROW(reflected["i"] = ten);
+      REQUIRE(f.i == ten);
    }
 
    SECTION("pod member assignment from const var") {
       const int ten = 10;
       REQUIRE(f.i != ten);
-      CHECK_NOTHROW(reflected["i"] = ten);
-      CHECK(f.i == ten);
+      REQUIRE_NOTHROW(reflected["i"] = ten);
+      REQUIRE(f.i == ten);
    }
 
    SECTION("pod member assignment from smaller type") {
       REQUIRE(f.i != 'c');
-      CHECK_NOTHROW(reflected["i"] = 'c');
-      CHECK(f.i == 'c');
+      REQUIRE_NOTHROW(reflected["i"] = 'c');
+      REQUIRE(f.i == 'c');
    }
 
    SECTION("pod member assignment from larger type") {
       REQUIRE(f.i != std::size_t(10));
-      CHECK_NOTHROW(reflected["i"] = std::size_t(10));
-      CHECK(f.i == std::size_t(10));
+      REQUIRE_NOTHROW(reflected["i"] = std::size_t(10));
+      REQUIRE(f.i == std::size_t(10));
    }
 
    SECTION("pod member assignment from incompatible type") {
-      CHECK_THROWS_AS(
+      REQUIRE_THROWS_AS(
          reflected["i"] = std::string{},
          const reflect::invalid_assignment_type&
       );
@@ -255,34 +257,34 @@ TEST_CASE("basic assignment", "[reflection][assignment][basic]") {
 
    SECTION("object member assignment") {
       REQUIRE(f.string == std::string{});
-      CHECK_NOTHROW(reflected["string"] = std::string{ "test" });
-      CHECK(f.string == "test");
+      REQUIRE_NOTHROW(reflected["string"] = std::string{ "test" });
+      REQUIRE(f.string == "test");
    }
 
    SECTION("object member assignment from var") {
       std::string test = "test";
       REQUIRE(f.string == std::string{});
 
-      CHECK_NOTHROW(reflected["string"] = test);
-      CHECK(f.string == test);
+      REQUIRE_NOTHROW(reflected["string"] = test);
+      REQUIRE(f.string == test);
    }
 
    SECTION("object member assignment from const var") {
       const std::string test = "test";
       REQUIRE(f.string == std::string{});
 
-      CHECK_NOTHROW(reflected["string"] = test);
-      CHECK(f.string == test);
+      REQUIRE_NOTHROW(reflected["string"] = test);
+      REQUIRE(f.string == test);
    }
 
    SECTION("object member assignment from compatible type") {
       REQUIRE(f.string == std::string{});
-      CHECK_NOTHROW(reflected["string"] = "test");
-      CHECK(f.string == "test");
+      REQUIRE_NOTHROW(reflected["string"] = "test");
+      REQUIRE(f.string == "test");
    }
 
    SECTION("object member assignment from incompatible type") {
-      CHECK_THROWS_AS(
+      REQUIRE_THROWS_AS(
          reflected["string"] = 10,
          const reflect::invalid_assignment_type&
       );
@@ -290,13 +292,45 @@ TEST_CASE("basic assignment", "[reflection][assignment][basic]") {
 
    SECTION("move only object member assignment") {
       REQUIRE(f.ncmem.m == 0);
-      CHECK_NOTHROW(reflected["ncmem"] = NonCopyable{ 10 });
-      CHECK(f.ncmem.m == 10);
+      REQUIRE_NOTHROW(reflected["ncmem"] = NonCopyable{ 10 });
+      REQUIRE(f.ncmem.m == 10);
    }
 
    SECTION("assignment to a member function") {
-      CHECK_THROWS_AS(
+      REQUIRE_THROWS_AS(
          reflected["Bar"] = 10,
+         const reflect::invalid_assignment_type&
+      );
+   }
+
+}
+
+TEST_CASE("static member assignment", "[reflection][assignment][static]") {
+   Static::abc = 0;
+   Static::string = std::string{};
+
+   Static s;
+   auto reflected = reflect::reflect(s);
+
+   SECTION("static pod assignment") {
+      REQUIRE(Static::abc != 10);
+      REQUIRE_NOTHROW(reflected["abc"] = 10);
+      REQUIRE(Static::abc == 10);
+   }
+
+   SECTION("static object assignment") {
+      REQUIRE(Static::string != "test");
+      REQUIRE_NOTHROW(reflected["string"] = "test");
+      REQUIRE(Static::string == "test");
+   }
+
+   SECTION("static object assignment from incompatible type") {
+      REQUIRE_THROWS_AS(reflected["string"] = 10, const reflect::invalid_assignment_type&);
+   }
+
+   SECTION("static function assignment") {
+      REQUIRE_THROWS_AS(
+         reflected["Funky"] = 10,
          const reflect::invalid_assignment_type&
       );
    }
