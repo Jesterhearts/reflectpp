@@ -54,18 +54,34 @@ TEST_CASE("basic member read", "[reflection][read][basic]") {
 
 }
 
-/*
-TODO
 TEST_CASE("static member read", "[reflection][read][static]") {
    Static s;
    auto reflected = reflect::reflect(s);
 
-   SECTION("static variable read") {
-      REQUIRE_NOTHROW(reflected["abc"].get_type());
+   Static::abc = 1000;
+   Static::string = "reflection.read.static";
+
+   SECTION("static pod read") {
+      int value = Static::abc + 1;
+      REQUIRE(value != Static::abc);
+
+      REQUIRE_NOTHROW(value = reflected["abc"]);
+      REQUIRE(value == Static::abc);
    }
 
-   SECTION("static function read") {
-      REQUIRE_NOTHROW(reflected["Funky"].get_type());
+   SECTION("static object read") {
+      std::string value;
+      REQUIRE(value != Static::string);
+
+      //TODO it should(?) be possible to do `value = reflected["string"]`
+      // compilation currently fails
+      REQUIRE_NOTHROW([&]() { std::string value2 = reflected["string"]; value = value2; }());
+      REQUIRE(value == Static::string);
+   }
+
+   SECTION("static object read to incompatible type") {
+      int i;
+      REQUIRE_THROWS_AS(i = reflected["string"], const reflect::invalid_requested_member_type&);
    }
 
 }
@@ -75,11 +91,19 @@ TEST_CASE("const member read", "[reflection][read][const]") {
    auto reflected = reflect::reflect(const_);
 
    SECTION("const member variable read") {
-      REQUIRE_NOTHROW(reflected["_const"].get_type());
+      int value = const_._const + 1;
+      REQUIRE(value != const_._const);
+
+      REQUIRE_NOTHROW(value = reflected["_const"]);
+      REQUIRE(value == const_._const);
    }
 
    SECTION("static const member variable read") {
-      REQUIRE_NOTHROW(reflected["_static"].get_type());
+      int value = Const::_static + 1;
+      REQUIRE(value != Const::_static);
+
+      REQUIRE_NOTHROW(value = reflected["_static"]);
+      REQUIRE(value == Const::_static);
    }
 
 }
@@ -89,15 +113,27 @@ TEST_CASE("array and pointer member read", "[reflection][read][arrays]") {
    auto reflected = reflect::reflect(arrays);
 
    SECTION("pointer member read") {
-      REQUIRE_NOTHROW(reflected["iptr"].get_type());
+      int* value = nullptr;
+      REQUIRE(value != arrays.iptr);
+
+      REQUIRE_NOTHROW(value = reflected["iptr"]);
+      REQUIRE(value == arrays.iptr);
    }
 
    SECTION("dynamic array member read") {
-      REQUIRE_NOTHROW(reflected["iarr"].get_type());
+      int* value = nullptr;
+      REQUIRE(value != arrays.iarr);
+
+      REQUIRE_NOTHROW(value = reflected["iarr"]);
+      REQUIRE(value == arrays.iarr);
    }
 
    SECTION("sized array member read") {
-      REQUIRE_NOTHROW(reflected["iarr10"].get_type());
+      int(*value)[10] = nullptr;
+      REQUIRE(value != &arrays.iarr10);
+
+      REQUIRE_NOTHROW([&]() { int(&value2)[10] = reflected["iarr10"]; value = &value2; }());
+      REQUIRE(value == &arrays.iarr10);
    }
 
 }
@@ -105,28 +141,37 @@ TEST_CASE("array and pointer member read", "[reflection][read][arrays]") {
 TEST_CASE("empty object member read", "[reflection][read][empty]") {
    SECTION("non static member read") {
       auto reflected = reflect::reflect<Foo>();
-      REQUIRE_NOTHROW(reflected["i"].get_type());
+
+      int value = 42;
+      REQUIRE_THROWS_AS(value = reflected["i"], const reflect::member_access_error&);
+      REQUIRE(value == 42);
    }
 
    SECTION("static const member read") {
       auto reflected = reflect::reflect<Const>();
-      REQUIRE_NOTHROW(reflected["_static"].get_type());
+
+      int value = Const::_static + 1;
+      REQUIRE(value != Const::_static);
+
+      REQUIRE_NOTHROW(value = reflected["_static"]);
+      REQUIRE(value == Const::_static);
    }
 
    SECTION("static member read") {
       auto reflected = reflect::reflect<Static>();
-      REQUIRE_NOTHROW(reflected["abc"].get_type());
+
+      int value = Static::abc + 1;
+      REQUIRE(value != Static::abc);
+
+      REQUIRE_NOTHROW(value = reflected["abc"]);
+      REQUIRE(value == Static::abc);
    }
 
-   SECTION("static function read") {
+   SECTION("static member read from incompatible type") {
       auto reflected = reflect::reflect<Static>();
-      REQUIRE_NOTHROW(reflected["Funky"].get_type());
-   }
 
-   SECTION("non-existent member read") {
-      auto reflected = reflect::reflect<Static>();
-      REQUIRE_THROWS_AS(reflected["invalid identifier"], const reflect::member_access_error&);
+      int value;
+      REQUIRE_THROWS_AS(value = reflected["string"], const reflect::member_access_error&);
    }
 
 }
-*/
