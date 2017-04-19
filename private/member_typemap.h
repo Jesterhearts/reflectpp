@@ -8,7 +8,6 @@
 
 #include "utility/extract_underlying_types.h"
 #include "utility/find_duplicate_type.h"
-#include "utility/type_repr.h"
 #include "utility/typelist.h"
 #include "utility/typelist_to_numberlist.h"
 
@@ -38,15 +37,14 @@ template<
    member_underlyingtype_set<underlying_members...>,
    index_list<indexes...>
    > : reflected_instance<Class>,
-   member<Class, members, type_repr_t<underlying_members...>>...
+   member<Class, members>...
 {
    using Members = member_typelist<members...>;
    using Types = member_underlyingtype_set<underlying_members...>;
    using FnTypes = decltype(filter_fn_types(Types()));
    using ObjTypes = decltype(filter_obj_types(Types()));
    using Indexes = index_list<indexes...>;
-   using TypeRepr = type_repr_t<underlying_members...>;
-   using ReflectedType = reflected_member<Class, TypeRepr>;
+   using ReflectedType = reflected_member<Class>;
 
    using reflected_instance<Class>::reflected_instance;
 
@@ -78,7 +76,7 @@ template<
       }
 
       return static_cast<ReflectedType&>(
-         static_cast<member<Class, Option, TypeRepr>&>(*this)
+         static_cast<member<Class, Option>&>(*this)
       );
    }
 
@@ -92,7 +90,7 @@ template<
       }
 
       return static_cast<ReflectedType&>(
-         static_cast<member<Class, Option, TypeRepr>&>(*this)
+         static_cast<member<Class, Option>&>(*this)
          );
    }
 

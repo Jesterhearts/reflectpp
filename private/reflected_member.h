@@ -10,9 +10,9 @@
 namespace reflect {
 namespace detail {
 
-template<typename Class, typename TypeRepr>
+template<typename Class>
 struct reflected_member {
-   using ThisType = reflected_member<Class, TypeRepr>;
+   using ThisType = reflected_member<Class>;
 
    reflected_member() = default;
 

@@ -12,15 +12,14 @@
 namespace reflect {
 namespace detail {
 
-template<typename, typename, typename> struct member;
+template<typename, typename> struct member;
 
 template<
    typename Class,
-   typename TypeRepr,
    typename MemberType,
    MemberType* Member>
-struct member<Class, member_info<MemberType*, Member>, TypeRepr>
-   : member_assigner<Class, reflected_member<Class, TypeRepr>, MemberType>
+struct member<Class, member_info<MemberType*, Member>>
+   : member_assigner<Class, reflected_member<Class>, MemberType>
 {
    using Type = MemberType;
    using Info = member_info<MemberType*, Member>;

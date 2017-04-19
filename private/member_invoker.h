@@ -16,16 +16,15 @@
 namespace reflect {
 namespace detail {
 
-template<typename, typename, typename> struct member;
+template<typename, typename> struct member;
 
 template<
    typename Class,
-   typename TypeRepr,
    typename ReturnType,
    typename... Args,
    ReturnType(Class::* MemberFn)(Args...)>
-struct member<Class, member_info<ReturnType(Class::*)(Args...), MemberFn>, TypeRepr>
-   : member_invoker<Class, reflected_member<Class, TypeRepr>, ReturnType, Args...>
+struct member<Class, member_info<ReturnType(Class::*)(Args...), MemberFn>>
+   : member_invoker<Class, reflected_member<Class>, ReturnType, Args...>
 {
    using Type = ReturnType(Args...);
    using Info = member_info<ReturnType(Class::*)(Args...), MemberFn>;

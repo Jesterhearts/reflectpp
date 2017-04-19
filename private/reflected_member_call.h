@@ -33,7 +33,7 @@ struct reflected_member_call {
    }
 
 private:
-   template<typename, typename> friend struct reflected_member;
+   template<typename> friend struct reflected_member;
 
    template<typename... _Args>
    reflected_member_call(ReflectedType& fnptr, _Args&&... args) :
@@ -80,7 +80,7 @@ struct reflected_member_call<Class, ReflectedType> {
    }
 
 private:
-   template<typename, typename> friend struct reflected_member;
+   template<typename> friend struct reflected_member;
 
    reflected_member_call(ReflectedType& fnptr) :
       fnptr(fnptr),
