@@ -227,3 +227,6 @@ TEST_CASE("basic function call returns", "[reflection][functions][basic][return]
    }
 
 }
+
+TEST_CASE("function call returns with objects", "[reflection][functions][basic][return][objects]") {
+}

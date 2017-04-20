@@ -136,6 +136,13 @@ TEST_CASE("array and pointer member read", "[reflection][read][arrays]") {
       REQUIRE(value == &arrays.iarr10);
    }
 
+   SECTION("invalid sized array member read") {
+      REQUIRE_THROWS_AS(
+         [&]() { int(&value)[2] = reflected["iarr10"]; }(),
+         const reflect::invalid_requested_member_type&
+      );
+   }
+
 }
 
 TEST_CASE("empty object member read", "[reflection][read][empty]") {
