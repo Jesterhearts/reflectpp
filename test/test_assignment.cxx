@@ -149,49 +149,58 @@ TEST_CASE("constant member assignment", "[reflection][assignment][const]") {
 
 }
 
-TEST_CASE("array and pointer member assignment", "[!mayfail][reflection][assignment][arrays]") {
+TEST_CASE("array and pointer member assignment", "[reflection][assignment][arrays]") {
    Arrays arrays;
    auto reflected = reflect::reflect(arrays);
 
    SECTION("pointer assignment") {
-      int* old_ptr = arrays.iptr;
-      std::unique_ptr<int> new_ptr = std::make_unique<int>(10);
+      std::unique_ptr<int> managed_ptr = std::make_unique<int>(10);
 
-      REQUIRE(old_ptr != new_ptr.get());
+      int* const old_ptr = arrays.iptr;
+      int* const new_ptr = managed_ptr.get();
+
+      REQUIRE(old_ptr != new_ptr);
       REQUIRE(*old_ptr != *new_ptr);
 
-      REQUIRE_NOTHROW(reflected["iptr"] = new_ptr.get());
-      CHECK(arrays.iptr == new_ptr.get());
-      CHECK(*arrays.iptr == *new_ptr);
+      auto swap_ptrs = [&]() {
+         int* temp = managed_ptr.release();
+         managed_ptr.reset(old_ptr);
+         return temp;
+      };
 
-      new_ptr.release();
-      new_ptr.reset(old_ptr);
+      REQUIRE_NOTHROW(reflected["iptr"] = swap_ptrs());
+      CHECK(arrays.iptr == new_ptr);
+      CHECK(*arrays.iptr == *new_ptr);
    }
 
    SECTION("dynamic array assignment") {
-      int* old_ptr = arrays.iarr;
-      std::unique_ptr<int[]> new_ptr = std::make_unique<int[]>(5);
+      std::unique_ptr<int[]> managed_ptr = std::make_unique<int[]>(5);
+
+      int* const old_ptr = arrays.iarr;
+      int* const new_ptr = managed_ptr.get();
       new_ptr[0] = 100;
 
-      REQUIRE(old_ptr != new_ptr.get());
-      REQUIRE(*old_ptr != *new_ptr.get());
+      REQUIRE(old_ptr != new_ptr);
+      REQUIRE(*old_ptr != *new_ptr);
 
-      REQUIRE_NOTHROW(reflected["iarr"] = new_ptr.get());
-      CHECK(arrays.iarr == new_ptr.get());
-      CHECK(*arrays.iarr == *new_ptr.get());
+      //Better than ((temp = new_ptr.release(), new_ptr.reset(old_ptr)), temp)
+      auto swap_ptrs = [&]() {
+         int* temp = managed_ptr.release();
+         managed_ptr.reset(old_ptr);
+         return temp;
+      };
 
-      new_ptr.release();
-      new_ptr.reset(old_ptr);
+      REQUIRE_NOTHROW(reflected["iarr"] = swap_ptrs());
+      CHECK(arrays.iarr == new_ptr);
+      CHECK(*arrays.iarr == *new_ptr);
    }
 
    SECTION("sized array assignment") {
-      const int newArray[10] = { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 };
-      static_assert(sizeof(newArray) == sizeof(arrays.iarr10), "");
-      REQUIRE(std::memcmp(newArray, arrays.iarr10, sizeof(newArray)) != 0);
-
-      //TODO this throws an exception
-      REQUIRE_NOTHROW(reflected["iarr10"] = newArray);
-      REQUIRE(std::memcmp(newArray, arrays.iarr10, sizeof(newArray)) == 0);
+      int newArray[10] = { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 };
+      REQUIRE_THROWS_AS(
+         reflected["iarr10"] = newArray,
+         const reflect::invalid_assignment_type&
+      );
    }
 }
 

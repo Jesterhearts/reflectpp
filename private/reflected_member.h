@@ -14,7 +14,7 @@ template<typename Class>
 struct reflected_member {
    using ThisType = reflected_member<Class>;
 
-   reflected_member() = default;
+   constexpr reflected_member() = default;
 
    template<typename Type, typename = std::enable_if_t<!std::is_pointer_v<Type>>>
    operator Type&() {
