@@ -62,9 +62,6 @@ private:
    reflected_member_call& operator=(reflected_member_call&&) = delete;
 };
 
-   template<typename T>
-   constexpr bool is_const_ref = std::is_const_v<T> && std::is_reference_v<T>;
-
 template<typename Class, typename ReflectedType>
 struct reflected_member_call<Class, ReflectedType> {
    ReflectedType&      fnptr;
