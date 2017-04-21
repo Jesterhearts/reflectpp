@@ -62,6 +62,9 @@ private:
    reflected_member_call& operator=(reflected_member_call&&) = delete;
 };
 
+   template<typename T>
+   constexpr bool is_const_ref = std::is_const_v<T> && std::is_reference_v<T>;
+
 template<typename Class, typename ReflectedType>
 struct reflected_member_call<Class, ReflectedType> {
    ReflectedType&      fnptr;
@@ -70,13 +73,13 @@ struct reflected_member_call<Class, ReflectedType> {
    template<typename ReturnType>
    operator ReturnType() {
       called = true;
-      return invoke<ReturnType>();
+      return fnptr.invoke<ReturnType>();
    }
 
    ~reflected_member_call() noexcept(false) {
       if (called) return;
       called = true;
-      invoke<void>();
+      fnptr.invoke<void>();
    }
 
 private:
@@ -94,10 +97,6 @@ private:
       other.called = true;
    }
 
-   template<typename ReturnType>
-   ReturnType invoke() {
-      return fnptr.invoke<ReturnType>();
-   }
 };
 
 }

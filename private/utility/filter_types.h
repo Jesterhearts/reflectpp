@@ -99,7 +99,7 @@ constexpr auto filter_fn_types(typelist<list...>) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-template<typename FnType, typename... filtered>
+template<typename Target, typename... filtered>
 constexpr auto filter_compatible_types(
    typelist<>,
    typelist<filtered...>,
@@ -109,42 +109,42 @@ constexpr auto filter_compatible_types(
 }
 
 template<
-   typename FnType,
-   typename candidate,
-   typename... candidates,
+   typename Target,
+   typename Candidate,
+   typename... Candidates,
    typename... filtered>
    constexpr auto filter_compatible_types(
-      typelist<candidate, candidates...>,
+      typelist<Candidate, Candidates...>,
       typelist<filtered...>,
-      std::enable_if_t<implicitly_equal<FnType, candidate>::value, bool>)
+      std::enable_if_t<implicitly_equal<Candidate, Target>::value, bool>)
 {
-   return filter_compatible_types<FnType>(
-      typelist<candidates...>(),
-      typelist<filtered..., candidate>(),
+   return filter_compatible_types<Target>(
+      typelist<Candidates...>(),
+      typelist<filtered..., Candidate>(),
       true
    );
 }
 
 template<
-   typename FnType,
-   typename candidate,
-   typename... candidates,
+   typename Target,
+   typename Candidate,
+   typename... Candidates,
    typename... filtered>
    constexpr auto filter_compatible_types(
-      typelist<candidate, candidates...>,
+      typelist<Candidate, Candidates...>,
       typelist<filtered...>,
-      std::enable_if_t<!implicitly_equal<FnType, candidate>::value, bool>)
+      std::enable_if_t<!implicitly_equal<Candidate, Target>::value, bool>)
 {
-   return filter_compatible_types<FnType>(
-      typelist<candidates...>(),
+   return filter_compatible_types<Target>(
+      typelist<Candidates...>(),
       typelist<filtered...>(),
       true
    );
 }
 
-template<typename FnType, typename... list>
+template<typename Target, typename... list>
 constexpr auto filter_compatible_types(typelist<list...>) {
-   return filter_compatible_types<FnType>(
+   return filter_compatible_types<Target>(
       typelist<list...>(),
       typelist<>(),
       true

@@ -1,4 +1,5 @@
 #include "testclasses.h"
+#include <memory>
 
 TEST_CASE("basic member assignment", "[reflection][assignment][basic]") {
    Foo f;
@@ -152,7 +153,6 @@ TEST_CASE("array and pointer member assignment", "[!mayfail][reflection][assignm
    Arrays arrays;
    auto reflected = reflect::reflect(arrays);
 
-   /*
    SECTION("pointer assignment") {
       int* old_ptr = arrays.iptr;
       std::unique_ptr<int> new_ptr = std::make_unique<int>(10);
@@ -160,7 +160,6 @@ TEST_CASE("array and pointer member assignment", "[!mayfail][reflection][assignm
       REQUIRE(old_ptr != new_ptr.get());
       REQUIRE(*old_ptr != *new_ptr);
 
-      //TODO does not compile
       REQUIRE_NOTHROW(reflected["iptr"] = new_ptr.get());
       CHECK(arrays.iptr == new_ptr.get());
       CHECK(*arrays.iptr == *new_ptr);
@@ -168,9 +167,7 @@ TEST_CASE("array and pointer member assignment", "[!mayfail][reflection][assignm
       new_ptr.release();
       new_ptr.reset(old_ptr);
    }
-   */
 
-   /*
    SECTION("dynamic array assignment") {
       int* old_ptr = arrays.iarr;
       std::unique_ptr<int[]> new_ptr = std::make_unique<int[]>(5);
@@ -179,15 +176,13 @@ TEST_CASE("array and pointer member assignment", "[!mayfail][reflection][assignm
       REQUIRE(old_ptr != new_ptr.get());
       REQUIRE(*old_ptr != *new_ptr.get());
 
-      //TODO does not compile
       REQUIRE_NOTHROW(reflected["iarr"] = new_ptr.get());
-      CHECK(arrays.iptr == new_ptr.get());
-      CHECK(*arrays.iptr == *new_ptr.get());
+      CHECK(arrays.iarr == new_ptr.get());
+      CHECK(*arrays.iarr == *new_ptr.get());
 
       new_ptr.release();
       new_ptr.reset(old_ptr);
    }
-   */
 
    SECTION("sized array assignment") {
       const int newArray[10] = { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 };
@@ -198,7 +193,6 @@ TEST_CASE("array and pointer member assignment", "[!mayfail][reflection][assignm
       REQUIRE_NOTHROW(reflected["iarr10"] = newArray);
       REQUIRE(std::memcmp(newArray, arrays.iarr10, sizeof(newArray)) == 0);
    }
-
 }
 
 TEST_CASE("empty object member assignment", "[reflection][assignment][empty]") {

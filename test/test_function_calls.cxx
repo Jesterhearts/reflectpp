@@ -1,6 +1,8 @@
 #include "../reflect.h"
 
 #include "dependencies/Catch/catch.hpp"
+#include <ostream>
+#include <iostream>
 
 struct NonMovableNonCopyable {
    int value = 0;
@@ -69,15 +71,11 @@ struct Functions {
       return string_value;
    }
 
-   bool stringref0_called = false;
    std::string& StringRef0() {
-      stringref0_called = true;
       return string_value;
    }
 
-   bool conststringref0_called = false;
    const std::string& ConstStringRef0() {
-      conststringref0_called = true;
       return string_value;
    }
 
@@ -93,9 +91,11 @@ struct Functions {
       nc_value = std::move(nc);
    }
 
-   bool noncopyable0_called = false;
    NonCopyable NonCopyable0() {
-      noncopyable0_called = true;
+      return std::move(nc_value);
+   }
+
+   NonCopyable&& NonCopyableRefRef0() {
       return std::move(nc_value);
    }
 
@@ -129,6 +129,7 @@ REFLECT_ENABLE(
    Void1_NonCopyable,
    Void1_NonCopyableRefRef,
    NonCopyable0,
+   NonCopyableRefRef0,
    Void1_NonMovableNonCopyable,
    Void2_ConstStringRef_ConstStringRef,
    String2_ConstStringRef_ConstStringRef
@@ -168,7 +169,7 @@ TEST_CASE("basic function calls", "[reflection][functions][basic]") {
 
 }
 
-TEST_CASE("basic function call returns", "[reflection][functions][basic][return][int]") {
+TEST_CASE("basic function call returns", "[reflection][functions][return][basic][int]") {
    Functions f;
    auto reflected = reflect::reflect(f);
 
@@ -228,5 +229,103 @@ TEST_CASE("basic function call returns", "[reflection][functions][basic][return]
 
 }
 
-TEST_CASE("function call returns with objects", "[reflection][functions][basic][return][objects]") {
+TEST_CASE("function call returns with objects", "[reflection][functions][return][basic][objects]") {
+   Functions f;
+   auto reflected = reflect::reflect(f);
+
+   f.string_value = "test";
+   f.nc_value.value = -10;
+
+   SECTION("std::string() call without value capture") {
+      REQUIRE_FALSE(f.string0_called);
+      REQUIRE_NOTHROW(reflected["String0"]());
+      REQUIRE(f.string0_called);
+   }
+
+   SECTION("std::string() call with value capture") {
+      std::string value;
+      REQUIRE(value != f.string_value);
+
+      //TODO it should(?) be possible to do `value = reflected["String0"]()`
+      // compilation currently fails
+      REQUIRE_NOTHROW([&]() { std::string value2 = reflected["String0"](); value = value2; }());
+      REQUIRE(value == f.string_value);
+   }
+
+   SECTION("std::string() call with double value capture") {
+      double value;
+      REQUIRE_THROWS_AS(value = reflected["String0"](), const reflect::invalid_function_call&);
+   }
+
+   SECTION("std::string() call without value capture via invoke<std::string>") {
+      REQUIRE_FALSE(f.string0_called);
+      REQUIRE_NOTHROW(reflected["String0"].invoke<std::string>());
+      REQUIRE(f.string0_called);
+   }
+
+   SECTION("std::string() call via invoke<std::string> with value capture") {
+      std::string value;
+      REQUIRE(value != f.string_value);
+
+      REQUIRE_NOTHROW(value = reflected["String0"].invoke<std::string>());
+      REQUIRE(value == f.string_value);
+   }
+
+   SECTION("std::string() call without value capture via invoke<void>") {
+      REQUIRE_FALSE(f.string0_called);
+      REQUIRE_NOTHROW(reflected["String0"].invoke<void>());
+      REQUIRE(f.string0_called);
+   }
+
+   SECTION("std::string() call via invoke<double> with value capture") {
+      double value;
+      REQUIRE_THROWS_AS(value = reflected["String0"].invoke<double>(), const reflect::invalid_function_call&);
+   }
+
+   SECTION("std::string&() call via invoke<std::string&> with value capture") {
+      std::string* value = nullptr;
+      REQUIRE(value != &f.string_value);
+
+      //TODO it should(?) be possible to do `std::string& value2 = reflected["StringRef0"]()`
+      // compilation currently fails
+      REQUIRE_NOTHROW([&]() {
+         std::string& value2 = reflected["StringRef0"].invoke<std::string&>();
+         value = &value2;
+       }());
+      REQUIRE(value == &f.string_value);
+   }
+
+   SECTION("const std::string&() call with value capture") {
+      REQUIRE_NOTHROW([&]() {
+         const std::string& value = reflected["ConstStringRef0"]();
+         REQUIRE(value == f.string_value);
+      }());
+   }
+
+   SECTION("const std::string&() call via invoke<const std::string&> with value capture"){
+      const std::string* value = nullptr;
+      REQUIRE(value != &f.string_value);
+
+      REQUIRE_NOTHROW([&]() {
+         const std::string& value2 = reflected["ConstStringRef0"].invoke<const std::string&>();
+         value = &value2;
+      }());
+      REQUIRE(value == &f.string_value);
+   }
+
+   SECTION("NonCopyable() call with value capture") {
+      NonCopyable value;
+      REQUIRE(value.value != f.nc_value.value);
+
+      REQUIRE_NOTHROW(value = reflected["NonCopyable0"]());
+      REQUIRE(value.value == f.nc_value.value);
+   }
+
+   SECTION("NonCopyable&&() call with value capture") {
+      NonCopyable value;
+      REQUIRE(value.value != f.nc_value.value);
+
+      REQUIRE_NOTHROW(value = reflected["NonCopyableRefRef0"]());
+      REQUIRE(value.value == f.nc_value.value);
+   }
 }

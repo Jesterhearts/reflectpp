@@ -73,11 +73,9 @@ struct reflected_member {
       );
 
       if (type_info.value && type_info.id == get_type()) {
-         return static_cast<ReturnType>(
-            static_cast<
+         static_cast<
             member_invoker<Class, ThisType, ReturnType, Args&&...>&
-            >(*this)(std::forward<Args>(args)...)
-         );
+         >(*this)(std::forward<Args>(args)...);
       }
 
       return invoke<ReturnType>(Options(), std::forward<Args>(args)...);
@@ -104,18 +102,41 @@ private:
       typename OptionRT,
       typename... OptionArgs,
       typename... Options>
-      ReturnType invoke(
-         typelist<OptionRT(OptionArgs...), Options...>,
-         Args&&... args)
+   std::enable_if_t<std::is_void_v<ReturnType>> invoke(
+      typelist<OptionRT(OptionArgs...), Options...>,
+      Args&&... args)
    {
       constexpr auto type_info = get_type_info<Class, OptionRT(OptionArgs...)>();
 
       if (type_info.id == get_type()) {
-         return static_cast<ReturnType>(
-            static_cast<
+         static_cast<
             member_invoker<Class, ThisType, OptionRT, OptionArgs...>&
-            >(*this)(static_cast<OptionArgs>(std::forward<Args>(args))...)
+         >(*this)(static_cast<OptionArgs>(std::forward<Args>(args))...);
+      }
+      else {
+         invoke<ReturnType>(
+            typelist<Options...>(),
+            std::forward<Args>(args)...
          );
+      }
+   }
+
+   template<
+      typename ReturnType,
+      typename... Args,
+      typename OptionRT,
+      typename... OptionArgs,
+      typename... Options>
+   std::enable_if_t<!std::is_void_v<ReturnType>, ReturnType> invoke(
+      typelist<OptionRT(OptionArgs...), Options...>,
+      Args&&... args)
+   {
+      constexpr auto type_info = get_type_info<Class, OptionRT(OptionArgs...)>();
+
+      if (type_info.id == get_type()) {
+         return static_cast<
+            member_invoker<Class, ThisType, OptionRT, OptionArgs...>&
+         >(*this)(static_cast<OptionArgs>(std::forward<Args>(args))...);
       }
 
       return invoke<ReturnType>(
@@ -135,6 +156,7 @@ private:
    void assign(typelist<Option, Options...>, Type&& arg)
    {
       constexpr auto type_info = get_type_info<Class, Option>();
+      static_assert(!(std::is_pointer_v<Type> && std::is_array_v<Option>), "");
 
       if (type_info.id == get_type()) {
          #pragma warning(push)
