@@ -114,7 +114,6 @@ struct Arrays {
    }
 };
 
-//TODO fails to compile if reflected
 int Arrays::static5[5] = { 0, 1, 2, 3, 4 };
 }
 

@@ -136,6 +136,14 @@ TEST_CASE("array and pointer member read", "[reflection][read][arrays]") {
       REQUIRE(value == &arrays.iarr10);
    }
 
+   SECTION("static sized array member read") {
+      int(*value)[5] = nullptr;
+      REQUIRE(value != &arrays.static5);
+
+      REQUIRE_NOTHROW([&]() { int(&value2)[5] = reflected["static5"]; value = &value2; }());
+      REQUIRE(value == &arrays.static5);
+   }
+
    SECTION("invalid sized array member read") {
       REQUIRE_THROWS_AS(
          [&]() { int(&value)[2] = reflected["iarr10"]; }(),
