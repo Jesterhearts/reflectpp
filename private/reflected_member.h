@@ -50,35 +50,15 @@ struct reflected_member {
 
    template<typename Type>
    void operator=(Type&& arg) {
-      constexpr auto type_info = get_type_info<Class, Type>();
-      using Options = decltype(
-         filter_compatible_types<Type>(ObjTypes<Class>())
-      );
-
-      if (type_info.value && type_info.id == get_type()) {
-         return static_cast<member_assigner<Class, ThisType, Type>&>(
-            *this
-         ) = std::forward<Type>(arg);
-      }
-
-      return assign(Options(), std::forward<Type>(arg));
+      return try_fastpath_assign(std::forward<Type>(arg));
    }
 
    template<typename ReturnType, typename... Args>
    ReturnType invoke(Args&&... args) {
       using Type = ReturnType(Args&&...);
-      constexpr auto type_info = get_type_info<Class, Type>();
-      using Options = decltype(
-         filter_compatible_types<Type>(FnTypes<Class>())
-      );
+      using TypeInfo = decltype(get_type_info<Class, Type>());
 
-      if (type_info.value && type_info.id == get_type()) {
-         static_cast<
-            member_invoker<Class, ThisType, ReturnType, Args&&...>&
-         >(*this)(std::forward<Args>(args)...);
-      }
-
-      return invoke<ReturnType>(Options(), std::forward<Args>(args)...);
+      return try_fastpath_invoke<ReturnType, TypeInfo>(std::forward<Args>(args)...);
    }
 
    template<typename... Args>
@@ -89,6 +69,56 @@ struct reflected_member {
    virtual std::intptr_t get_type() const noexcept = 0;
 
 private:
+   template<typename Type, typename TypeInfo = decltype(get_type_info<Class, Type>())>
+   std::enable_if_t<!TypeInfo::value> try_fastpath_assign(Type&& arg) {
+      using Options = decltype(
+         filter_compatible_types<Type>(ObjTypes<Class>())
+      );
+
+      return assign(Options(), std::forward<Type>(arg));
+   }
+
+   template<typename Type, typename TypeInfo = decltype(get_type_info<Class, Type>())>
+   std::enable_if_t<TypeInfo::value> try_fastpath_assign(Type&& arg) {
+      if (TypeInfo::id != get_type()) {
+         using Options = decltype(
+            filter_compatible_types<Type>(ObjTypes<Class>())
+         );
+
+         return assign(Options(), std::forward<Type>(arg));
+      }
+
+      static_cast<member_assigner<Class, ThisType, Type>&>(
+         *this
+      ) = std::forward<Type>(arg);
+   }
+
+   template<typename ReturnType, typename TypeInfo, typename... Args>
+   std::enable_if_t<!TypeInfo::value, ReturnType> try_fastpath_invoke(Args&&... args) {
+      using Type = ReturnType(Args&&...);
+      using Options = decltype(
+         filter_compatible_types<Type>(FnTypes<Class>())
+      );
+
+      return invoke<ReturnType>(Options(), std::forward<Args>(args)...);
+   }
+
+   template<typename ReturnType, typename TypeInfo, typename... Args>
+   std::enable_if_t<TypeInfo::value, ReturnType> try_fastpath_invoke(Args&&... args) {
+      using Type = ReturnType(Args&&...);
+      if (TypeInfo::id != get_type()) {
+         using Options = decltype(
+            filter_compatible_types<Type>(FnTypes<Class>())
+         );
+
+         return invoke<ReturnType>(Options(), std::forward<Args>(args)...);
+      }
+
+      return static_cast<
+         member_invoker<Class, ThisType, ReturnType, Args&&...>&
+      >(*this)(std::forward<Args>(args)...);
+   }
+
    template<typename ReturnType, typename... Args>
    ReturnType invoke(typelist<>, Args&&... args) {
       throw invalid_function_call{
@@ -107,6 +137,7 @@ private:
       Args&&... args)
    {
       constexpr auto type_info = get_type_info<Class, OptionRT(OptionArgs...)>();
+      static_assert(type_info.value, "");
 
       if (type_info.id == get_type()) {
          static_cast<
@@ -132,6 +163,7 @@ private:
       Args&&... args)
    {
       constexpr auto type_info = get_type_info<Class, OptionRT(OptionArgs...)>();
+      static_assert(type_info.value, "");
 
       if (type_info.id == get_type()) {
          return static_cast<
@@ -156,7 +188,7 @@ private:
    void assign(typelist<Option, Options...>, Type&& arg)
    {
       constexpr auto type_info = get_type_info<Class, Option>();
-      static_assert(!(std::is_pointer_v<Type> && std::is_array_v<Option>), "");
+      static_assert(type_info.value, "");
 
       if (type_info.id == get_type()) {
          #pragma warning(push)
@@ -184,6 +216,7 @@ private:
       Type get(typelist<Option, Options...>)
    {
       constexpr auto type_info = get_type_info<Class, Option>();
+      static_assert(type_info.value, "");
 
       if (type_info.id == get_type()) {
          return (Type) static_cast<member_assigner<Class, ThisType, Option>&>(

@@ -31,13 +31,12 @@ template<
    typename... members,
    typename... underlying_members,
    size_t... indexes>
-   struct member_typemap_impl<
+struct member_typemap_impl<
    Class,
    member_typelist<members...>,
    member_underlyingtype_set<underlying_members...>,
    index_list<indexes...>
-   > : reflected_instance<Class>,
-   member<Class, members>...
+> : reflected_instance<Class>, member<Class, members>...
 {
    using Members = member_typelist<members...>;
    using Types = member_underlyingtype_set<underlying_members...>;

@@ -118,4 +118,4 @@ struct Arrays {
 int Arrays::static5[5] = { 0, 1, 2, 3, 4 };
 }
 
-REFLECT_ENABLE(Arrays, iptr, iarr, iarr10);
+REFLECT_ENABLE(Arrays, iptr, iarr, iarr10, static5);

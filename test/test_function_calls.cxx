@@ -244,8 +244,6 @@ TEST_CASE("function call returns with objects", "[reflection][functions][return]
       std::string value;
       REQUIRE(value != f.string_value);
 
-      //TODO it should(?) be possible to do `value = reflected["String0"]()`
-      // compilation currently fails
       REQUIRE_NOTHROW([&]() { std::string value2 = reflected["String0"](); value = value2; }());
       REQUIRE(value == f.string_value);
    }
@@ -284,8 +282,6 @@ TEST_CASE("function call returns with objects", "[reflection][functions][return]
       std::string* value = nullptr;
       REQUIRE(value != &f.string_value);
 
-      //TODO it should(?) be possible to do `std::string& value2 = reflected["StringRef0"]()`
-      // compilation currently fails
       REQUIRE_NOTHROW([&]() {
          std::string& value2 = reflected["StringRef0"].invoke<std::string&>();
          value = &value2;
@@ -325,5 +321,12 @@ TEST_CASE("function call returns with objects", "[reflection][functions][return]
 
       REQUIRE_NOTHROW(value = reflected["NonCopyableRefRef0"]());
       REQUIRE(value.value == f.nc_value.value);
+   }
+
+   SECTION("NonCopyable&&() call with const& value capture") {
+      REQUIRE_NOTHROW([&]() {
+         const NonCopyable& value = reflected["NonCopyableRefRef0"]();
+         REQUIRE(value.value == f.nc_value.value);
+      }());
    }
 }

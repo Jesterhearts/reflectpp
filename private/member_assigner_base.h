@@ -23,9 +23,8 @@ struct member_assigner<
       || std::is_move_constructible<Type>::value)>
 > : Base {
    virtual Type& get() = 0;
-//TODO this seems kind of a hack, fixme
    virtual void operator=(const Type& type) = 0;
-   virtual void operator=(std::remove_reference_t<Type>&& type) = 0;
+   virtual void operator=(Type&& type) = 0;
 };
 
 template<typename Class, typename Base, typename Type>
