@@ -2,6 +2,7 @@
 
 #include <type_traits>
 
+#include "extract_underlying_types.h"
 #include "typelist.h"
 
 namespace reflect {
@@ -9,61 +10,70 @@ namespace detail {
 
 template<typename, typename, bool = true> struct implicitly_equal;
 
+template<typename From, typename To>
+constexpr bool implicitly_equal_v = implicitly_equal<
+   extract_underlying_type_t<From>,
+   extract_underlying_type_t<To>
+>::value;
+
 template<typename Set1, typename Set2>
 struct implicitly_equal<Set1, Set2, false> : std::false_type {};
 
-template<typename... Set1>
-struct implicitly_equal<typelist<Set1...>, typelist<>, true> : std::false_type {};
+template<typename Item, typename... Set1>
+struct implicitly_equal<typelist<Item, Set1...>, typelist<>, true> : std::false_type {};
 
-template<typename... Set2>
-struct implicitly_equal<typelist<>, typelist<Set2...>, true> : std::false_type {};
+template<typename Item, typename... Set2>
+struct implicitly_equal<typelist<>, typelist<Item, Set2...>, true> : std::false_type {};
 
 template<>
 struct implicitly_equal<typelist<>, typelist<>, true> : std::true_type {};
 
-template<typename Candidate, typename... Set1, typename From, typename... Set2>
-struct implicitly_equal<typelist<Candidate, Set1...>, typelist<From, Set2...>, true>
-   : implicitly_equal<
+template<typename From, typename... Set1, typename To, typename... Set2>
+struct implicitly_equal<typelist<From, Set1...>, typelist<To, Set2...>, true>
+: implicitly_equal<
    typelist<Set1...>,
    typelist<Set2...>,
-   (std::is_convertible_v<From, Candidate>
-      || std::is_constructible_v<Candidate, From>)
-   && !(std::is_array_v<Candidate> && std::is_pointer_v<From>)
-   >
+   (std::is_convertible_v<From, To>
+      || std::is_constructible_v<To, From>)
+   && !(std::is_array_v<To> && std::is_pointer_v<From>)
+>
+{};
+
+template<typename From, typename To>
+struct implicitly_equal<From, To> : implicitly_equal<
+   typelist<>,
+   typelist<>,
+   (std::is_convertible_v<From, To>
+      || std::is_constructible_v<To, From>)
+   && !(std::is_array_v<To> && std::is_pointer_v<From>) >
 {};
 
 template<
-   typename CandidateReturnType,
+   typename FromReturnType,
    typename... Args1,
-   typename TargetReturnType,
+   typename ToReturnType,
    typename... Args2>
-   struct implicitly_equal<CandidateReturnType(Args1...), TargetReturnType(Args2...), true>
-   : implicitly_equal<
+struct implicitly_equal<FromReturnType(Args1...), ToReturnType(Args2...), true>
+: implicitly_equal<
    typelist<Args1...>,
    typelist<Args2...>,
-   std::is_convertible<CandidateReturnType, TargetReturnType>::value>
-{};
+   implicitly_equal_v<FromReturnType, ToReturnType>>
+{
+};
 
 template<
-   typename CandidateReturnType,
+   typename FromReturnType,
    typename... Args1,
    typename... Args2>
-   struct implicitly_equal<CandidateReturnType(Args1...), void(Args2...), true>
-   : implicitly_equal<
+struct implicitly_equal<FromReturnType(Args1...), void(Args2...), true>
+: implicitly_equal<
    typelist<Args1...>,
    typelist<Args2...>,
    true>
-{};
+{
+};
 
 
-template<typename Candidate, typename From>
-struct implicitly_equal<Candidate, From> : implicitly_equal<
-   typelist<>,
-   typelist<>,
-   (std::is_convertible_v<From, Candidate>
-      || std::is_constructible_v<Candidate, From>)
-   && !(std::is_array_v<Candidate> && std::is_pointer_v<From>) >
-{};
 
 }
 }

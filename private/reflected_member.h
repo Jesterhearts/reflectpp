@@ -3,62 +3,44 @@
 #include <utility>
 
 #include "exceptions.h"
-#include "member_assigner_base.h"
-#include "member_invoker_base.h"
+#include "member_assign.h"
+#include "member_get.h"
+#include "member_invoke.h"
 #include "reflected_member_call.h"
 
 namespace reflect {
 namespace detail {
 
+template<typename> struct class_reflection_info;
+
 template<typename Class>
 struct reflected_member {
    using ThisType = reflected_member<Class>;
 
-   constexpr reflected_member() = default;
-
-   template<typename Type, typename = std::enable_if_t<!std::is_pointer_v<Type>>>
-   operator Type&() {
-      constexpr auto type_info = get_type_info<Class, Type>();
-      using Options = decltype(
-         filter_compatible_types<Type>(ObjTypes<Class>())
-      );
-
-      if (type_info.value && type_info.id == get_type()) {
-         return static_cast<member_assigner<Class, ThisType, Type>&>(
-            *this
-         ).get();
-      }
-
-      return get<Type&>(Options());
+   template<typename Type, typename = std::enable_if_t<!std::is_array_v<Type>>>
+   operator Type() {
+      return get<Type>(filter_convertible_types_t<Class, Type>());
    }
 
-   template<typename Type, typename = std::enable_if_t<std::is_pointer_v<Type>>>
-   operator Type() {
-      constexpr auto type_info = get_type_info<Class, Type>();
-      using Options = decltype(
-         filter_compatible_types<Type>(ObjTypes<Class>())
-      );
-
-      if (type_info.value && type_info.id == get_type()) {
-         return static_cast<member_assigner<Class, ThisType, Type>&>(
-            *this
-         ).get();
-      }
-
-      return get<Type>(Options());
+   template<typename Type, typename = std::enable_if_t<std::is_array_v<Type>>>
+   operator Type&() {
+      return get<Type&>(filter_convertible_types_t<Class, Type>());
    }
 
    template<typename Type>
    void operator=(Type&& arg) {
-      return try_fastpath_assign(std::forward<Type>(arg));
+      return assign(
+         std::forward<Type>(arg),
+         filter_assignable_types_t<Class, Type>()
+      );
    }
 
    template<typename ReturnType, typename... Args>
    ReturnType invoke(Args&&... args) {
-      using Type = ReturnType(Args&&...);
-      using TypeInfo = decltype(get_type_info<Class, Type>());
-
-      return try_fastpath_invoke<ReturnType, TypeInfo>(std::forward<Args>(args)...);
+      return invoke_impl<ReturnType>(
+         filter_convertible_types_t<Class, ReturnType(Args&&...)>(),
+         std::forward<Args>(args)...
+      );
    }
 
    template<typename... Args>
@@ -66,142 +48,9 @@ struct reflected_member {
       return{ *this, std::forward<Args>(args)... };
    }
 
-   virtual std::intptr_t get_type() const noexcept = 0;
+   virtual std::size_t get_type() const noexcept = 0;
 
 private:
-   template<typename Type, typename TypeInfo = decltype(get_type_info<Class, Type>())>
-   std::enable_if_t<!TypeInfo::value> try_fastpath_assign(Type&& arg) {
-      using Options = decltype(
-         filter_compatible_types<Type>(ObjTypes<Class>())
-      );
-
-      return assign(Options(), std::forward<Type>(arg));
-   }
-
-   template<typename Type, typename TypeInfo = decltype(get_type_info<Class, Type>())>
-   std::enable_if_t<TypeInfo::value> try_fastpath_assign(Type&& arg) {
-      if (TypeInfo::id != get_type()) {
-         using Options = decltype(
-            filter_compatible_types<Type>(ObjTypes<Class>())
-         );
-
-         return assign(Options(), std::forward<Type>(arg));
-      }
-
-      static_cast<member_assigner<Class, ThisType, Type>&>(
-         *this
-      ) = std::forward<Type>(arg);
-   }
-
-   template<typename ReturnType, typename TypeInfo, typename... Args>
-   std::enable_if_t<!TypeInfo::value, ReturnType> try_fastpath_invoke(Args&&... args) {
-      using Type = ReturnType(Args&&...);
-      using Options = decltype(
-         filter_compatible_types<Type>(FnTypes<Class>())
-      );
-
-      return invoke<ReturnType>(Options(), std::forward<Args>(args)...);
-   }
-
-   template<typename ReturnType, typename TypeInfo, typename... Args>
-   std::enable_if_t<TypeInfo::value, ReturnType> try_fastpath_invoke(Args&&... args) {
-      using Type = ReturnType(Args&&...);
-      if (TypeInfo::id != get_type()) {
-         using Options = decltype(
-            filter_compatible_types<Type>(FnTypes<Class>())
-         );
-
-         return invoke<ReturnType>(Options(), std::forward<Args>(args)...);
-      }
-
-      return static_cast<
-         member_invoker<Class, ThisType, ReturnType, Args&&...>&
-      >(*this)(std::forward<Args>(args)...);
-   }
-
-   template<typename ReturnType, typename... Args>
-   ReturnType invoke(typelist<>, Args&&... args) {
-      throw invalid_function_call{
-         "No matching function for argument list"
-      };
-   }
-
-   template<
-      typename ReturnType,
-      typename... Args,
-      typename OptionRT,
-      typename... OptionArgs,
-      typename... Options>
-   std::enable_if_t<std::is_void_v<ReturnType>> invoke(
-      typelist<OptionRT(OptionArgs...), Options...>,
-      Args&&... args)
-   {
-      constexpr auto type_info = get_type_info<Class, OptionRT(OptionArgs...)>();
-      static_assert(type_info.value, "");
-
-      if (type_info.id == get_type()) {
-         static_cast<
-            member_invoker<Class, ThisType, OptionRT, OptionArgs...>&
-         >(*this)(static_cast<OptionArgs>(std::forward<Args>(args))...);
-      }
-      else {
-         invoke<ReturnType>(
-            typelist<Options...>(),
-            std::forward<Args>(args)...
-         );
-      }
-   }
-
-   template<
-      typename ReturnType,
-      typename... Args,
-      typename OptionRT,
-      typename... OptionArgs,
-      typename... Options>
-   std::enable_if_t<!std::is_void_v<ReturnType>, ReturnType> invoke(
-      typelist<OptionRT(OptionArgs...), Options...>,
-      Args&&... args)
-   {
-      constexpr auto type_info = get_type_info<Class, OptionRT(OptionArgs...)>();
-      static_assert(type_info.value, "");
-
-      if (type_info.id == get_type()) {
-         return static_cast<
-            member_invoker<Class, ThisType, OptionRT, OptionArgs...>&
-         >(*this)(static_cast<OptionArgs>(std::forward<Args>(args))...);
-      }
-
-      return invoke<ReturnType>(
-         typelist<Options...>(),
-         std::forward<Args>(args)...
-      );
-   }
-
-   template<typename Type>
-   void assign(typelist<>, Type&& arg) {
-      throw invalid_assignment_type{
-         "Attempting to assign wrong type to member"
-      };
-   }
-
-   template<typename Type, typename Option, typename... Options>
-   void assign(typelist<Option, Options...>, Type&& arg)
-   {
-      constexpr auto type_info = get_type_info<Class, Option>();
-      static_assert(type_info.value, "");
-
-      if (type_info.id == get_type()) {
-         #pragma warning(push)
-         #pragma warning(disable: 4800 4267)
-         return static_cast<member_assigner<Class, ThisType, Option>&>(
-            *this
-         ) = std::forward<Type>(arg);
-         #pragma warning(pop)
-      }
-
-      return assign(typelist<Options...>(), std::forward<Type>(arg));
-   }
-
    template<typename Type>
    Type get(typelist<>) {
       throw invalid_requested_member_type{
@@ -213,22 +62,72 @@ private:
       typename Type,
       typename Option,
       typename... Options>
-      Type get(typelist<Option, Options...>)
-   {
-      constexpr auto type_info = get_type_info<Class, Option>();
-      static_assert(type_info.value, "");
+   Type get(typelist<Option, Options...>) {
+      using TypeInfo = type_and_index_t<Class, Option>;
+      static_assert(TypeInfo::value, "");
 
-      if (type_info.id == get_type()) {
-         return (Type) static_cast<member_assigner<Class, ThisType, Option>&>(
-            *this
-         ).get();
+      if (TypeInfo::index == get_type()) {
+         return static_cast<Type>(get_member_ref(
+            static_cast<member<Class, TypeInfo::type>&>(*this)
+         ));
       }
 
       return get<Type>(typelist<Options...>());
    }
 
-   constexpr reflected_member(const reflected_member&) = default;
-   constexpr reflected_member(reflected_member&&) = default;
+   template<typename Type>
+   void assign(Type&&, typelist<>) {
+      throw invalid_assignment_type{
+         "Attempting to assign wrong type to member"
+      };
+   }
+
+   template<typename Type, typename Option, typename... Options>
+   void assign(Type&& arg, typelist<Option, Options...>) {
+      using TypeInfo = type_and_index_t<Class, Option>;
+      static_assert(TypeInfo::value, "");
+
+      if (TypeInfo::index == get_type()) {
+         return assign_to_member(
+            std::forward<Type>(arg),
+            static_cast<member<Class, TypeInfo::type>&>(*this)
+         );
+      }
+
+      return assign(std::forward<Type>(arg), typelist<Options...>());
+   }
+
+   template<typename ReturnType, typename... Args>
+   ReturnType invoke_impl(typelist<>, Args&&...) {
+      throw invalid_function_call{
+         "No matching function for argument list"
+      };
+   }
+
+   template<
+      typename ReturnType,
+      typename Option,
+      typename... Options,
+      typename... Args>
+   ReturnType invoke_impl(
+      typelist<Option, Options...>,
+      Args&&... args)
+   {
+      using TypeInfo = type_and_index_t<Class, Option>;
+      static_assert(TypeInfo::value, "");
+
+      if (TypeInfo::index == get_type()) {
+         return invoke_member<ReturnType>(
+            static_cast<member<Class, TypeInfo::type>&>(*this),
+            std::forward<Args>(args)...
+         );
+      }
+
+      return invoke_impl<ReturnType>(
+         typelist<Options...>(),
+         std::forward<Args>(args)...
+      );
+   }
 
    template<typename, typename, typename, typename>
    friend struct member_assigner;

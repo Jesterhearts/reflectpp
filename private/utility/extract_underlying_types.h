@@ -1,86 +1,56 @@
 #pragma once
 
-#include "filter_types.h"
-#include "typelist.h"
-
 namespace reflect {
 namespace detail {
-template<typename> struct extract_underlying_type;
+template<typename MemberType, MemberType> struct member_info;
+
+template<typename Type>
+struct extract_underlying_type {
+   using type = Type;
+};
 
 template<
    typename MemberType,
    typename Class,
-   MemberType Class::* Member,
-   typename... Members>
-   struct extract_underlying_type<
-   typelist<member_info<MemberType Class::*, Member>, Members... >>
+   MemberType Class::* Member>
+struct extract_underlying_type<
+   member_info<MemberType Class::*, Member>>
 {
-   using remain = typelist<Members...>;
-   using head = MemberType;
+   using type = MemberType;
 };
 
 template<
    typename ReturnType,
    typename Class,
    typename... Args,
-   ReturnType(Class::* Member)(Args...),
-   typename... Members>
-   struct extract_underlying_type<
-   typelist<member_info<ReturnType(Class::*)(Args...), Member>, Members... >>
+   ReturnType(Class::* Member)(Args...)>
+struct extract_underlying_type<
+   member_info<ReturnType(Class::*)(Args...), Member>>
 {
-   using remain = typelist<Members...>;
-   using head = ReturnType(Args...);
+   using type = ReturnType(Args...);
+};
+
+template<
+   typename ReturnType,
+   typename... Args,
+   ReturnType(*Member)(Args...)>
+struct extract_underlying_type<
+   member_info<ReturnType(*)(Args...), Member>>
+{
+   using type = ReturnType(Args...);
 };
 
 template<
    typename MemberType,
-   MemberType* Member,
-   typename... Members>
-   struct extract_underlying_type<
-   typelist<member_info<MemberType*, Member>, Members... >>
+   MemberType* Member>
+struct extract_underlying_type<
+   member_info<MemberType*, Member>>
 {
-   using remain = typelist<Members...>;
-   using head = MemberType;
+   using type = MemberType;
 };
 
-template<typename... extracted>
-constexpr const auto extract_underlying_types(
-   typelist<>,
-   typelist<extracted...>)
-{
-   return typelist<extracted...>();
-}
-
-template<typename... members, typename... extracted>
-constexpr const auto extract_underlying_types(
-   typelist<members...>,
-   typelist<extracted...>)
-{
-   using Extracted1 = extract_underlying_type<typelist<members...>>;
-   return extract_underlying_types(
-      typename Extracted1::remain(),
-      typelist<extracted..., typename Extracted1::head>()
-   );
-}
-
-template<typename... members>
-constexpr const auto extract_underlying_types(typelist<members...>) {
-   using Extracted1 = extract_underlying_type<typelist<members...>>;
-   return extract_underlying_types(
-      typename Extracted1::remain(),
-      typelist<typename Extracted1::head>()
-   );
-}
-
-template<typename... list>
-using member_underlyingtype_list = decltype(
-   extract_underlying_types(typelist<list...>())
-);
-
-template<typename... list>
-using member_underlyingtype_set = decltype(
-   filter_types(member_underlyingtype_list<list...>())
-);
+template<typename MemberType>
+using extract_underlying_type_t = typename extract_underlying_type<MemberType>::type;
 
 }
 }
