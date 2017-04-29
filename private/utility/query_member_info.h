@@ -3,6 +3,7 @@
 namespace reflect {
 namespace detail {
 
+template<typename> struct member_name;
 template<typename MemberType, MemberType> struct member_info;
 template<typename, typename> struct member;
 
