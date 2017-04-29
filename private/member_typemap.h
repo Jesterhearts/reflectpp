@@ -8,17 +8,16 @@
 
 #include "utility/type_and_index.h"
 #include "utility/typelist.h"
-#include "utility/typelist_to_numberlist.h"
 
 namespace reflect {
 namespace detail {
 template<typename, typename, typename> struct member_typemap_impl;
 
-template<typename Class, typename... types>
+template<typename Class, typename... Types>
 using member_typemap = member_typemap_impl<
    Class,
-   typelist<types...>,
-   std::index_sequence_for<std::size_t, types...>
+   typelist<Types...>,
+   std::index_sequence_for<Types...>
 >;
 
 template<

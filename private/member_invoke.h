@@ -16,14 +16,14 @@ template<
    typename ReflectedMemberType,
    typename... Args>
 std::enable_if_t<
-   !is_function_member_v<get_member_info_t<ReflectedMemberType>>, ReturnType
+   !is_function_member_v<member_info_t<ReflectedMemberType>>, ReturnType
 > invoke_member(
    ReflectedMemberType&,
    Args&&...)
 {
    throw invalid_function_call{
       std::string{ "Cannot call non-function member" }
-     + member_name<get_member_info_t<ReflectedMemberType>>::key()
+     + member_name<member_info_t<ReflectedMemberType>>::key()
    };
 }
 
@@ -32,17 +32,17 @@ template<
    typename ReflectedMemberType,
    typename... Args>
 std::enable_if_t<
-   is_function_member_v<get_member_info_t<ReflectedMemberType>>
-   && is_static_member_v<get_member_info_t<ReflectedMemberType>>,
+   is_function_member_v<member_info_t<ReflectedMemberType>>
+   && is_static_member_v<member_info_t<ReflectedMemberType>>,
    ReturnType
 > invoke_member(
    ReflectedMemberType&,
    Args&&... args)
 {
    return static_cast<ReturnType>(
-      (*member_pointer<
-         get_member_info_t<ReflectedMemberType>
-      >::get())(std::forward<Args>(args)...)
+      (*member_attributes<
+         member_info_t<ReflectedMemberType>
+      >::ptr())(std::forward<Args>(args)...)
    );
 }
 
@@ -51,8 +51,8 @@ template<
    typename ReflectedMemberType,
    typename... Args>
 std::enable_if_t<
-   is_function_member_v<get_member_info_t<ReflectedMemberType>>
-   && !is_static_member_v<get_member_info_t<ReflectedMemberType>>,
+   is_function_member_v<member_info_t<ReflectedMemberType>>
+   && !is_static_member_v<member_info_t<ReflectedMemberType>>,
    ReturnType
 > invoke_member(
    ReflectedMemberType& reflected,
@@ -62,11 +62,11 @@ std::enable_if_t<
    if (!instance) {
       throw invalid_function_call{
          std::string{ "Cannot call non-static function: " }
-         + member_name<get_member_info_t<ReflectedMemberType>>::key()
+         + member_name<member_info_t<ReflectedMemberType>>::key()
       };
    }
 
-   auto member_ptr = member_pointer<get_member_info_t<ReflectedMemberType>>::get();
+   auto member_ptr = member_attributes<member_info_t<ReflectedMemberType>>::ptr();
    return static_cast<ReturnType>(
       (instance->*member_ptr)(std::forward<Args>(args)...)
    );

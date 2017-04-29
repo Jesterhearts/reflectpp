@@ -2,7 +2,7 @@
 
 #include <type_traits>
 
-#include "extract_underlying_types.h"
+#include "query_member_info.h"
 #include "typelist.h"
 
 namespace reflect {
@@ -12,8 +12,8 @@ template<typename, typename, bool = true> struct implicitly_equal;
 
 template<typename From, typename To>
 constexpr bool implicitly_equal_v = implicitly_equal<
-   extract_underlying_type_t<From>,
-   extract_underlying_type_t<To>
+   member_type_t<From>,
+   member_type_t<To>
 >::value;
 
 template<typename Set1, typename Set2>

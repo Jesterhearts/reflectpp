@@ -12,7 +12,7 @@ template<typename> struct member_name;
 
 template<
    typename ReflectedMemberType,
-   typename MemberInfo = get_member_info_t<ReflectedMemberType>
+   typename MemberInfo = member_info_t<ReflectedMemberType>
 >
 void get_member_ref(
    ReflectedMemberType&,
@@ -26,20 +26,20 @@ void get_member_ref(
 
 template<
    typename ReflectedMemberType,
-   typename MemberInfo = get_member_info_t<ReflectedMemberType>
+   typename MemberInfo = member_info_t<ReflectedMemberType>
 >
 auto& get_member_ref(
    ReflectedMemberType&,
    std::enable_if_t<is_static_member_v<MemberInfo>, bool> = true,
    std::enable_if_t<!is_function_member_v<MemberInfo>, bool> = true)
 {
-   auto member_ptr = member_pointer<MemberInfo>::get();
+   auto member_ptr = member_attributes<MemberInfo>::ptr();
    return *member_ptr;
 }
 
 template<
    typename ReflectedMemberType,
-   typename MemberInfo = get_member_info_t<ReflectedMemberType>
+   typename MemberInfo = member_info_t<ReflectedMemberType>
 >
 auto& get_member_ref(
    ReflectedMemberType& reflected,
@@ -54,7 +54,7 @@ auto& get_member_ref(
       };
    }
 
-   auto member_ptr = member_pointer<MemberInfo>::get();
+   auto member_ptr = member_attributes<MemberInfo>::ptr();
    return instance->*member_ptr;
 }
 

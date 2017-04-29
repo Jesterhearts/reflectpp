@@ -24,7 +24,7 @@ struct reflected_member {
 
    template<typename Type, typename = std::enable_if_t<std::is_array_v<Type>>>
    operator Type&() {
-      return get<Type&>(filter_convertible_types_t<Class, Type>());
+      return get<Type&>(filter_convertible_types_t<Class, Type&>());
    }
 
    template<typename Type>

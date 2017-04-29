@@ -8,7 +8,6 @@
 
 #include "utility/filter_types.h"
 #include "utility/implicitly_equal_types.h"
-#include "utility/number_list.h"
 
 namespace reflect {
 namespace detail {
@@ -22,13 +21,13 @@ struct reflected_member_call {
    template<typename ReturnType>
    operator ReturnType() {
       called = true;
-      return invoke<ReturnType>(number_list_t<sizeof...(Args)>());
+      return invoke<ReturnType>(std::index_sequence_for<Args>());
    }
 
    ~reflected_member_call() noexcept(false) {
       if (called) return;
       called = true;
-      invoke<void>(number_list_t<sizeof...(Args)>());
+      invoke<void>(std::index_sequence_for<Args>());
    }
 
 private:
@@ -49,8 +48,8 @@ private:
       other.called = true;
    }
 
-   template<typename ReturnType, size_t... ParamNum>
-   ReturnType invoke(number_list<ParamNum...>) {
+   template<typename ReturnType, std::size_t... ParamNum>
+   ReturnType invoke(std::integer_sequence<std::size_t, ParamNum...>) {
       return fnptr.invoke<ReturnType>(
          std::get<ParamNum>(std::move(params))...
       );
