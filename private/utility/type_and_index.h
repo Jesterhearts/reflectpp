@@ -12,14 +12,6 @@ template<typename> struct class_reflection_info;
 template<std::intptr_t, typename, typename>
 struct type_and_index;
 
-template<std::size_t _index, typename Candidate>
-struct type_and_index<_index, Candidate, typelist<>>
-   : std::false_type
-{
-   using type = Candidate;
-   constexpr static const std::size_t index = _index;
-};
-
 template<std::size_t _index, typename Candidate, typename... Rest>
 struct type_and_index<
    _index,
