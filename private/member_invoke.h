@@ -58,18 +58,18 @@ std::enable_if_t<
    ReflectedMemberType& reflected,
    Args&&... args)
 {
-   auto* instance = reflected.get_instance();
-   if (!instance) {
-      throw invalid_function_call{
-         std::string{ "Cannot call non-static function: " }
-         + member_name<member_info_t<ReflectedMemberType>>::key()
-      };
+   auto* instance = class_instance_for(reflected);
+   if (instance) {
+      auto member_ptr = member_attributes<member_info_t<ReflectedMemberType>>::ptr();
+      return static_cast<ReturnType>(
+         (instance->*member_ptr)(std::forward<Args>(args)...)
+      );
    }
 
-   auto member_ptr = member_attributes<member_info_t<ReflectedMemberType>>::ptr();
-   return static_cast<ReturnType>(
-      (instance->*member_ptr)(std::forward<Args>(args)...)
-   );
+   throw invalid_function_call{
+      std::string{ "Cannot call non-static function: " }
+      + member_name<member_info_t<ReflectedMemberType>>::key()
+   };
 }
 
 }

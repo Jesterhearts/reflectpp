@@ -12,15 +12,11 @@ template<typename> struct class_reflection_info;
 
 template<typename Class, typename MemberInfo>
 struct member : reflected_member<Class> {
-   Class* get_instance() {
-      return static_cast<reflected_instance<Class>*>(
-         static_cast<typename class_reflection_info<Class>::member_map*>(this)
-      )->instance;
-   }
 
-   std::size_t get_type() const noexcept override final {
+   std::size_t get_type() const noexcept override {
       return type_and_index_t<Class, MemberInfo>::index;
    }
+
 };
 
 }

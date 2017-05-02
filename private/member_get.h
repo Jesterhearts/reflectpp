@@ -46,16 +46,16 @@ auto& get_member_ref(
    std::enable_if_t<!is_static_member_v<MemberInfo>, bool> = true,
    std::enable_if_t<!is_function_member_v<MemberInfo>, bool> = true)
 {
-   auto* instance = reflected.get_instance();
-   if (!instance) {
-      throw invalid_requested_member_type{
-         std::string{ "Cannot access non-static member: " }
-         + member_name<MemberInfo>::key()
-      };
+   auto* instance = class_instance_for(reflected);
+   if (instance) {
+      auto member_ptr = member_attributes<MemberInfo>::ptr();
+      return instance->*member_ptr;
    }
 
-   auto member_ptr = member_attributes<MemberInfo>::ptr();
-   return instance->*member_ptr;
+   throw invalid_requested_member_type{
+      std::string{ "Cannot access non-static member: " }
+      + member_name<MemberInfo>::key()
+   };
 }
 
 

@@ -32,7 +32,7 @@ template<typename ReflectedMemberType>
 using member_info_t = typename get_member_info<ReflectedMemberType>::type;
 
 template<typename ReflectedMemberType>
-constexpr static decltype(auto) member_key() noexcept {
+constexpr decltype(auto) member_key() noexcept {
    return member_name<member_info_t<ReflectedMemberType>>::key();
 }
 
@@ -151,8 +151,16 @@ template<typename MemberInfo>
 using member_type_t = typename member_attributes<member_info_t<MemberInfo>>::type;
 
 template<typename ReflectedMemberType>
-constexpr static decltype(auto) get_member_ptr() noexcept {
+constexpr decltype(auto) get_member_ptr() noexcept {
    return member_attributes<member_info_t<ReflectedMemberType>>::ptr();
+}
+
+template<typename Class, typename MemberInfo>
+constexpr Class* class_instance_for(member<Class, MemberInfo>& reflected) noexcept {
+   return static_cast<reflected_instance<Class>*>(
+      static_cast<typename class_reflection_info<Class>::member_map*>(
+         std::addressof(reflected)
+   ))->instance;
 }
 
 }

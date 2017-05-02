@@ -50,6 +50,15 @@ struct reflected_member {
 
    virtual std::size_t get_type() const noexcept = 0;
 
+protected:
+   constexpr reflected_member() noexcept = default;
+
+   reflected_member(const reflected_member&) = default;
+   reflected_member(reflected_member&&) = default;
+
+   reflected_member& operator=(reflected_member&) = default;
+   reflected_member& operator=(reflected_member&&) = default;
+
 private:
    template<typename Type>
    Type get(typelist<>) {
@@ -128,12 +137,6 @@ private:
          std::forward<Args>(args)...
       );
    }
-
-   template<typename, typename, typename, typename>
-   friend struct member_assigner;
-
-   template<typename, typename, typename, typename...>
-   friend struct member_invoker;
 };
 
 }
