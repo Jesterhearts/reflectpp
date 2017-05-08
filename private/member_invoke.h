@@ -74,5 +74,17 @@ std::enable_if_t<
    };
 }
 
+template<typename, typename> struct invoke_member_generator;
+
+template<typename Class, typename ReturnType, typename... Args>
+struct invoke_member_generator<Class, ReturnType(Args...)> {
+   using function_type = ReturnType(reflected_member<Class>&, Args&&...);
+
+   template<typename MemberType>
+   constexpr static function_type* create() noexcept {
+      return &invoke_member<ReturnType, MemberType, Class, Args...>;
+   }
+};
+
 }
 }
