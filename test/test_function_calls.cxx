@@ -1,6 +1,6 @@
 #include "../reflect.h"
 
-#include "dependencies/Catch/catch.hpp"
+#include <Catch/catch.hpp>
 
 struct NonMovableNonCopyable {
    int value = 0;

@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="test">
+      <UniqueIdentifier>{698f51a0-ab95-4ac5-b8f0-5ee6adb315e5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="private">
+      <UniqueIdentifier>{3ecf26ee-6629-4731-8419-fa96e0ba67c6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="private\utility">
+      <UniqueIdentifier>{80e7de76-7a59-4c18-a76c-cc744b0b4423}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="private\macros">
+      <UniqueIdentifier>{64e343ef-b69a-416e-8693-72cf4417e4a8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\test\main.cxx">
+      <Filter>test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\test_assignment.cxx">
+      <Filter>test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\test_function_calls.cxx">
+      <Filter>test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\test_read.cxx">
+      <Filter>test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\test_touch.cxx">
+      <Filter>test</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\test\testclasses.h">
+      <Filter>test</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\private\exceptions.h">
+      <Filter>private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\private\member.h">
+      <Filter>private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\private\member_assign.h">
+      <Filter>private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\private\member_get.h">
+      <Filter>private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\private\member_invoke.h">
+      <Filter>private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\private\member_typemap.h">
+      <Filter>private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\private\reflected_instance.h">
+      <Filter>private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\private\reflected_member.h">
+      <Filter>private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\private\reflected_member_call.h">
+      <Filter>private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\private\macros\class_reflection_info.h">
+      <Filter>private\macros</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\private\macros\member_info.h">
+      <Filter>private\macros</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\private\macros\member_names.h">
+      <Filter>private\macros</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\private\utility\filter_types.h">
+      <Filter>private\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\private\utility\implicitly_equal_types.h">
+      <Filter>private\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\private\utility\query_member_info.h">
+      <Filter>private\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\private\utility\type_and_index.h">
+      <Filter>private\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\private\utility\typelist.h">
+      <Filter>private\utility</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

@@ -1,7 +1,7 @@
 #pragma once
 #include "../reflect.h"
 
-#include "dependencies/Catch/catch.hpp"
+#include <Catch/catch.hpp>
 
 #include <complex>
 #include <iostream>

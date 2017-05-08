@@ -74,16 +74,8 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+\.vs/
+*.vcxproj.user
+
 Debug/
-
-\.vs/Project1/v14/
-
-Project1\.sln
-
-Project1\.vcxproj
-
-Project1\.vcxproj\.filters
-
-Project1\.vcxproj\.user
-
 Release/

@@ -1,4 +1,4 @@
-#include "dependencies/Catch/catch_with_main.hpp"
+#include <Catch/catch_with_main.hpp>
 
 #include "testclasses.h"
 
