@@ -152,9 +152,11 @@ template<typename MemberInfo>
 using member_type_t = typename member_attributes<member_info_t<MemberInfo>>::type;
 
 template<typename ReflectedMemberType>
-constexpr decltype(auto) member_ptr_v  = member_attributes<
-   member_info_t<ReflectedMemberType>
->::ptr();
+constexpr decltype(auto) get_member_ptr() {
+   return member_attributes<
+      member_info_t<ReflectedMemberType>
+   >::ptr();
+}
 
 template<typename Class, typename MemberInfo>
 constexpr Class* class_instance_for(member<Class, MemberInfo>& reflected) noexcept {

@@ -3,6 +3,7 @@
 #include <utility>
 
 #include "type_and_index.h"
+#include "typelist.h"
 
 namespace reflect {
 namespace detail {
@@ -26,22 +27,21 @@ struct function_table<ReturnType(Args...), Class, TypeInfo...> {
    constexpr static auto last_id = entries[count - 1].first;
 
 private:
-   template<std::size_t Item0>
-   constexpr static bool ids_ascend_only(std::index_sequence<Item0>) {
+   constexpr static bool ids_ascend_only(std::size_t) {
       return true;
    }
 
-   template<std::size_t Item0, std::size_t Item1, std::size_t... Items>
-   constexpr static bool ids_ascend_only(std::index_sequence<Item0, Item1, Items...>) {
-      return Item0 < Item1 && ids_ascend_only(std::index_sequence<Item1, Items...>{});
+   template<typename Arg0, typename Arg1, typename... Args>
+   constexpr static bool ids_ascend_only(Arg0 arg0, Arg1 arg1, Args... args) {
+      return arg0 < arg1 && ids_ascend_only(arg1, args...);
    }
 
-   static_assert(ids_ascend_only(std::index_sequence<TypeInfo::index...>{}), "");
+   constexpr static bool ids_ascend = ids_ascend_only(TypeInfo::index...);
+   static_assert(ids_ascend, "");
 };
 
 template<typename FunctionType, typename Class, typename... Members>
 using function_table_t = function_table<FunctionType, Class, type_and_index_t<Class, Members>...>;
-
 
 }
 }

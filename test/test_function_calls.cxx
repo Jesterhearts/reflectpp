@@ -1,6 +1,8 @@
+#pragma warning(disable: 4503)
 #include "../reflect.h"
 
 #include <Catch/catch.hpp>
+
 
 struct NonMovableNonCopyable {
    int value = 0;

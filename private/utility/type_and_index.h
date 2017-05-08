@@ -37,6 +37,5 @@ using type_and_index_t = type_and_index<
    typename class_reflection_info<Class>::member_map::Members
 >;
 
-
 }
 }

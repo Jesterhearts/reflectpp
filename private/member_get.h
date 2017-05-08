@@ -33,7 +33,7 @@ auto& get_member_ref(
    std::enable_if_t<is_static_member_v<MemberInfo>, bool> = true,
    std::enable_if_t<!is_function_member_v<MemberInfo>, bool> = true)
 {
-   auto member_ptr = member_ptr_v<ReflectedMemberType>;
+   constexpr decltype(auto) member_ptr = get_member_ptr<ReflectedMemberType>();
    return *member_ptr;
 }
 
@@ -48,7 +48,7 @@ auto& get_member_ref(
 {
    auto* instance = class_instance_for(reflected);
    if (instance) {
-      auto member_ptr = member_ptr_v<ReflectedMemberType>;
+      constexpr decltype(auto) member_ptr = get_member_ptr<ReflectedMemberType>();
       return instance->*member_ptr;
    }
 

@@ -43,7 +43,7 @@ std::enable_if_t<
    Args&&... args)
 {
    return static_cast<ReturnType>(
-      (*member_ptr_v<ReflectedMemberType>)(std::forward<Args>(args)...)
+      (*get_member_ptr<ReflectedMemberType>())(std::forward<Args>(args)...)
    );
 }
 
@@ -62,7 +62,7 @@ std::enable_if_t<
 {
    auto* instance = class_instance_for<ReflectedMemberType>(reflected);
    if (instance) {
-      constexpr decltype(auto) member_ptr = member_ptr_v<ReflectedMemberType>;
+      constexpr decltype(auto) member_ptr = get_member_ptr<ReflectedMemberType>();
       return static_cast<ReturnType>(
          (instance->*member_ptr)(std::forward<Args>(args)...)
       );
