@@ -10,15 +10,17 @@ namespace reflect {
 namespace detail {
 
 template<typename> struct member_name;
+template<typename> struct reflected_member;
 
 template<
    typename ReturnType,
    typename ReflectedMemberType,
+   typename Class,
    typename... Args>
 std::enable_if_t<
    !is_function_member_v<member_info_t<ReflectedMemberType>>, ReturnType
 > invoke_member(
-   ReflectedMemberType&,
+   reflected_member<Class>&,
    Args&&...)
 {
    throw invalid_function_call{
@@ -30,13 +32,14 @@ std::enable_if_t<
 template<
    typename ReturnType,
    typename ReflectedMemberType,
+   typename Class,
    typename... Args>
 std::enable_if_t<
    is_function_member_v<member_info_t<ReflectedMemberType>>
    && is_static_member_v<member_info_t<ReflectedMemberType>>,
    ReturnType
 > invoke_member(
-   ReflectedMemberType&,
+   reflected_member<Class>&,
    Args&&... args)
 {
    return static_cast<ReturnType>(
@@ -47,18 +50,19 @@ std::enable_if_t<
 template<
    typename ReturnType,
    typename ReflectedMemberType,
+   typename Class,
    typename... Args>
 std::enable_if_t<
    is_function_member_v<member_info_t<ReflectedMemberType>>
    && !is_static_member_v<member_info_t<ReflectedMemberType>>,
    ReturnType
 > invoke_member(
-   ReflectedMemberType& reflected,
+   reflected_member<Class>& reflected,
    Args&&... args)
 {
-   auto* instance = class_instance_for(reflected);
+   auto* instance = class_instance_for<ReflectedMemberType>(reflected);
    if (instance) {
-      auto member_ptr = member_ptr_v<ReflectedMemberType>;
+      constexpr decltype(auto) member_ptr = member_ptr_v<ReflectedMemberType>;
       return static_cast<ReturnType>(
          (instance->*member_ptr)(std::forward<Args>(args)...)
       );

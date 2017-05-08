@@ -17,17 +17,9 @@ struct function_table<ReturnType(Args...), Class, TypeInfo...> {
    using function_type = ReturnType(reflected_member<Class>&, Args&&...);
    using table_entry_t = std::pair<std::size_t, function_type*>;
 
-   template<typename MemberTypeInfo>
-   static ReturnType table_entry(reflected_member<Class>& instance, Args&&... args) {
-      return invoke_member<ReturnType>(
-         static_cast<member<Class, MemberTypeInfo::type>&>(instance),
-         std::forward<Args>(args)...
-      );
-   }
-
    constexpr static const std::size_t count = sizeof...(TypeInfo);
    constexpr static const table_entry_t entries[count]{
-      { TypeInfo::index, (&table_entry<TypeInfo>) }...
+      { TypeInfo::index, (&invoke_member<ReturnType, TypeInfo::type, Class, Args...>) }...
    };
 
    constexpr static auto first_id = entries[0].first;

@@ -47,9 +47,6 @@
     <ClInclude Include="..\..\private\member_get.h">
       <Filter>private</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\private\member_invoke.h">
-      <Filter>private</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\private\member_typemap.h">
       <Filter>private</Filter>
     </ClInclude>
@@ -88,6 +85,9 @@
     </ClInclude>
     <ClInclude Include="..\..\private\utility\function_table.h">
       <Filter>private\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\private\member_invoke.h">
+      <Filter>private</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -4,9 +4,10 @@
 namespace reflect {
 namespace detail {
 
-template<typename> struct member_name;
-template<typename MemberType, MemberType> struct member_info;
 template<typename, typename> struct member;
+template<typename MemberType, MemberType> struct member_info;
+template<typename> struct member_name;
+template<typename> struct reflected_member;
 
 template<typename Type>
 struct get_member_info {
@@ -160,6 +161,14 @@ constexpr Class* class_instance_for(member<Class, MemberInfo>& reflected) noexce
    return static_cast<reflected_instance<Class>*>(
       static_cast<typename class_reflection_info<Class>::member_map*>(
          std::addressof(reflected)
+   ))->instance;
+}
+
+template<typename ReflectedMemberType, typename Class>
+constexpr Class* class_instance_for(reflected_member<Class>& reflected) noexcept {
+   return static_cast<reflected_instance<Class>*>(
+      static_cast<typename class_reflection_info<Class>::member_map*>(
+         static_cast<member<Class, ReflectedMemberType>*>(std::addressof(reflected))
    ))->instance;
 }
 
