@@ -8,6 +8,8 @@
 #include "member_invoke.h"
 #include "reflected_member_call.h"
 
+#include "utility/function_table.h"
+
 namespace reflect {
 namespace detail {
 
@@ -115,27 +117,23 @@ private:
 
    template<
       typename ReturnType,
-      typename Option,
       typename... Options,
       typename... Args>
-   ReturnType invoke_impl(
-      typelist<Option, Options...>,
-      Args&&... args)
-   {
-      using TypeInfo = type_and_index_t<Class, Option>;
-      static_assert(TypeInfo::value, "");
+   ReturnType invoke_impl(typelist<Options...>, Args&&... args) {
+      using function_table = function_table_t<ReturnType(Args&&...), Class, Options...>;
 
-      if (TypeInfo::index == get_type()) {
-         return invoke_member<ReturnType>(
-            static_cast<member<Class, TypeInfo::type>&>(*this),
-            std::forward<Args>(args)...
-         );
+      const auto type = get_type();
+      if (type >= function_table::first_id && type <= function_table::last_id) {
+         for (auto&& id_and_fn : function_table::entries) {
+            if (type == id_and_fn.first) {
+               return id_and_fn.second(*this, std::forward<Args>(args)...);
+            }
+         }
       }
 
-      return invoke_impl<ReturnType>(
-         typelist<Options...>(),
-         std::forward<Args>(args)...
-      );
+      throw invalid_function_call{
+         "No matching function for argument list"
+      };
    }
 };
 

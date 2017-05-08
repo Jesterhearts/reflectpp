@@ -28,7 +28,7 @@ struct filter_convertible_types<
    typelist<Candidate, Rest...>,
    typelist<Results...>,
    std::enable_if_t<implicitly_equal_v<Candidate, Target>>
-> : filter_convertible_types<Target, typelist<Rest...>, typelist<Candidate, Results...>>
+> : filter_convertible_types<Target, typelist<Rest...>, typelist<Results..., Candidate>>
 {
 };
 
@@ -67,7 +67,7 @@ struct filter_assignable_types<
    typelist<Candidate, Rest...>,
    typelist<Results...>,
    std::enable_if_t<implicitly_equal_v<From, Candidate>>
-> : filter_assignable_types<From, typelist<Rest...>, typelist<Candidate, Results...>>
+> : filter_assignable_types<From, typelist<Rest...>, typelist<Results..., Candidate>>
 {
 };
 

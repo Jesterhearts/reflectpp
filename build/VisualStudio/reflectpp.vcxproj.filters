@@ -86,5 +86,8 @@
     <ClInclude Include="..\..\private\utility\typelist.h">
       <Filter>private\utility</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\private\utility\function_table.h">
+      <Filter>private\utility</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

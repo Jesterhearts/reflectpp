@@ -23,7 +23,7 @@ std::enable_if_t<
 {
    throw invalid_function_call{
       std::string{ "Cannot call non-function member" }
-     + member_name<member_info_t<ReflectedMemberType>>::key()
+     + member_key<ReflectedMemberType>()
    };
 }
 
@@ -40,9 +40,7 @@ std::enable_if_t<
    Args&&... args)
 {
    return static_cast<ReturnType>(
-      (*member_attributes<
-         member_info_t<ReflectedMemberType>
-      >::ptr())(std::forward<Args>(args)...)
+      (*member_ptr_v<ReflectedMemberType>)(std::forward<Args>(args)...)
    );
 }
 
@@ -60,7 +58,7 @@ std::enable_if_t<
 {
    auto* instance = class_instance_for(reflected);
    if (instance) {
-      auto member_ptr = member_attributes<member_info_t<ReflectedMemberType>>::ptr();
+      auto member_ptr = member_ptr_v<ReflectedMemberType>;
       return static_cast<ReturnType>(
          (instance->*member_ptr)(std::forward<Args>(args)...)
       );
@@ -68,7 +66,7 @@ std::enable_if_t<
 
    throw invalid_function_call{
       std::string{ "Cannot call non-static function: " }
-      + member_name<member_info_t<ReflectedMemberType>>::key()
+      + member_key<ReflectedMemberType>()
    };
 }
 

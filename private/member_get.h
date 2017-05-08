@@ -20,7 +20,7 @@ void get_member_ref(
 {
    throw invalid_requested_member_type{
       std::string{ "Cannot access function member: " }
-      + member_name<MemberInfo>::key()
+      + member_key<ReflectedMemberType>()
    };
 }
 
@@ -33,7 +33,7 @@ auto& get_member_ref(
    std::enable_if_t<is_static_member_v<MemberInfo>, bool> = true,
    std::enable_if_t<!is_function_member_v<MemberInfo>, bool> = true)
 {
-   auto member_ptr = member_attributes<MemberInfo>::ptr();
+   auto member_ptr = member_ptr_v<ReflectedMemberType>;
    return *member_ptr;
 }
 
@@ -48,13 +48,13 @@ auto& get_member_ref(
 {
    auto* instance = class_instance_for(reflected);
    if (instance) {
-      auto member_ptr = member_attributes<MemberInfo>::ptr();
+      auto member_ptr = member_ptr_v<ReflectedMemberType>;
       return instance->*member_ptr;
    }
 
    throw invalid_requested_member_type{
       std::string{ "Cannot access non-static member: " }
-      + member_name<MemberInfo>::key()
+      + member_key<ReflectedMemberType>()
    };
 }
 

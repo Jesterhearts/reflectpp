@@ -39,7 +39,7 @@ std::enable_if_t<
    && !is_function_member_v<ReflectedMemberType>
    && is_static_member_v<ReflectedMemberType>
 > assign_to_member(Type&& value, ReflectedMemberType&) {
-   *get_member_ptr<ReflectedMemberType>() = std::forward<Type>(value);
+   *member_ptr_v<ReflectedMemberType> = std::forward<Type>(value);
 }
 
 template<typename Type, typename ReflectedMemberType>
@@ -51,7 +51,7 @@ std::enable_if_t<
 
    auto* instance = class_instance_for(reflected);
    if (instance) {
-      auto member_ptr = get_member_ptr<ReflectedMemberType>();
+      auto member_ptr = member_ptr_v<ReflectedMemberType>;
       instance->*member_ptr = std::forward<Type>(value);
 
       return;
