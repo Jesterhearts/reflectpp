@@ -14,7 +14,7 @@ template<typename> struct reflected_member;
 
 template<typename ReflectedMemberType, typename Type, typename Class>
 std::enable_if_t<is_const_member_v<ReflectedMemberType>>
-assign_to_member(Type&&, reflected_member<Class>&) {
+assign_to_member(reflected_member<Class>&, Type&&) {
    throw invalid_assignment_to_const{
       std::string{ "Cannot assign to const member: " }
       + member_key<ReflectedMemberType>()
@@ -23,7 +23,7 @@ assign_to_member(Type&&, reflected_member<Class>&) {
 
 template<typename ReflectedMemberType, typename Type, typename Class>
 std::enable_if_t<is_function_member_v<ReflectedMemberType>>
-assign_to_member(Type&&, reflected_member<Class>&) {
+assign_to_member(reflected_member<Class>&, Type&&) {
    throw invalid_assignment_to_const{
       std::string{ "Cannot assign to function member: " }
       + member_key<ReflectedMemberType>()
@@ -35,7 +35,7 @@ std::enable_if_t<
    !is_const_member_v<ReflectedMemberType>
    && !is_function_member_v<ReflectedMemberType>
    && is_static_member_v<ReflectedMemberType>
-> assign_to_member(Type&& value, reflected_member<Class>&) {
+> assign_to_member(reflected_member<Class>&, Type&& value) {
    *get_member_ptr<ReflectedMemberType>() = std::forward<Type>(value);
 }
 
@@ -44,8 +44,7 @@ std::enable_if_t<
    !is_const_member_v<ReflectedMemberType>
    && !is_function_member_v<ReflectedMemberType>
    && !is_static_member_v<ReflectedMemberType>
-> assign_to_member(Type&& value, reflected_member<Class>& reflected) {
-
+> assign_to_member(reflected_member<Class>& reflected, Type&& value) {
    auto* instance = class_instance_for<ReflectedMemberType>(reflected);
    if (instance) {
       auto member_ptr = get_member_ptr<ReflectedMemberType>();
@@ -62,7 +61,7 @@ std::enable_if_t<
 
 template<typename Class, typename Type>
 struct assign_member_generator {
-   using function_type = void(Type&&, reflected_member<Class>&);
+   using function_type = void(reflected_member<Class>&, Type&&);
 
    template<typename MemberType>
    constexpr static function_type* create() noexcept {

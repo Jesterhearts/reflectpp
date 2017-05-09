@@ -21,33 +21,76 @@ struct reflected_member {
 
    template<typename Type, typename = std::enable_if_t<!std::is_array_v<Type>>>
    operator Type() {
-      return get<Type>(filter_convertible_types_t<Class, Type>());
+      return get<Type>();
    }
 
    template<typename Type, typename = std::enable_if_t<std::is_array_v<Type>>>
    operator Type&() {
-      return get<Type&>(filter_convertible_types_t<Class, Type&>());
+      return get<Type&>();
    }
 
    template<typename Type>
    void operator=(Type&& arg) {
-      return assign(
-         std::forward<Type>(arg),
-         filter_assignable_types_t<Class, Type>()
-      );
-   }
-
-   template<typename ReturnType, typename... Args>
-   ReturnType invoke(Args&&... args) {
-      return invoke_impl<ReturnType>(
-         filter_convertible_types_t<Class, ReturnType(Args&&...)>(),
-         std::forward<Args>(args)...
-      );
+      return assign(std::forward<Type>(arg));
    }
 
    template<typename... Args>
    reflected_member_call<Class, ThisType, Args&&...> operator()(Args&&... args) {
       return{ *this, std::forward<Args>(args)... };
+   }
+
+   template<typename ReturnType, typename... Args>
+   ReturnType invoke(Args&&... args) {
+      using options = filter_convertible_types_t<Class, ReturnType(Args&&...)>;
+      using function_generator = invoke_member_generator<Class, ReturnType(Args&&...)>;
+      using function_table = function_table_t<function_generator, Class, options>;
+
+      const auto type = get_type();
+      for (std::size_t i = 0; i < function_table::count; ++i) {
+         if (type == function_table::id_at(i)) {
+            return function_table::function_at(i)(*this, std::forward<Args>(args)...);
+         }
+      }
+
+      throw invalid_function_call{
+         "No matching function for argument list"
+      };
+   }
+
+   template<typename Type>
+   Type get() {
+      using options = filter_convertible_types_t<Class, Type>;
+      using function_generator = get_member_ref_generator<Class, Type>;
+      using function_table = function_table_t<function_generator, Class, options>;
+
+      const auto type = get_type();
+      for (std::size_t i = 0; i < function_table::count; ++i) {
+         if (type == function_table::id_at(i)) {
+            return function_table::function_at(i)(*this);
+         }
+      }
+
+      throw invalid_requested_member_type{
+         "Member type does not match requested type"
+      };
+   }
+
+   template<typename Type>
+   void assign(Type&& arg) {
+      using options = filter_assignable_types_t<Class, Type>;
+      using function_generator = assign_member_generator<Class, Type>;
+      using function_table = function_table_t<function_generator, Class, options>;
+
+      const auto type = get_type();
+      for (std::size_t i = 0; i < function_table::count; ++i) {
+         if (type == function_table::id_at(i)) {
+            return function_table::function_at(i)(*this, std::forward<Type>(arg));
+         }
+      }
+
+      throw invalid_assignment_type{
+         "Attempting to assign wrong type to member"
+      };
    }
 
    virtual std::size_t get_type() const noexcept = 0;
@@ -60,86 +103,6 @@ protected:
 
    reflected_member& operator=(reflected_member&) = default;
    reflected_member& operator=(reflected_member&&) = default;
-
-private:
-   template<typename Type>
-   Type get(typelist<>) {
-      throw invalid_requested_member_type{
-         "Member type does not match requested type"
-      };
-   }
-
-   template<
-      typename Type,
-      typename Option,
-      typename... Options>
-   Type get(typelist<Option, Options...>) {
-      using TypeInfo = type_and_index_t<Class, Option>;
-      static_assert(TypeInfo::value, "");
-
-      if (TypeInfo::index == get_type()) {
-         return static_cast<Type>(get_member_ref(
-            static_cast<member<Class, TypeInfo::type>&>(*this)
-         ));
-      }
-
-      return get<Type>(typelist<Options...>());
-   }
-
-   template<typename Type>
-   void assign(Type&&, typelist<>) {
-      throw invalid_assignment_type{
-         "Attempting to assign wrong type to member"
-      };
-   }
-
-   template<typename Type, typename... Options>
-   void assign(Type&& arg, typelist<Options...>) {
-      using function_generator = assign_member_generator<Class, Type>;
-      using function_table = function_table_t<function_generator, Class, Options...>;
-
-      const auto type = get_type();
-      if (type >= function_table::first_id && type <= function_table::last_id) {
-         for (auto&& id_and_fn : function_table::entries) {
-            if (type == id_and_fn.first) {
-               return id_and_fn.second(std::forward<Type>(arg), *this);
-            }
-         }
-      }
-
-      throw invalid_assignment_type{
-         "Attempting to assign wrong type to member"
-      };
-   }
-
-   template<typename ReturnType, typename... Args>
-   ReturnType invoke_impl(typelist<>, Args&&...) {
-      throw invalid_function_call{
-         "No matching function for argument list"
-      };
-   }
-
-   template<
-      typename ReturnType,
-      typename... Options,
-      typename... Args>
-   ReturnType invoke_impl(typelist<Options...>, Args&&... args) {
-      using function_generator = invoke_member_generator<Class, ReturnType(Args&&...)>;
-      using function_table = function_table_t<function_generator, Class, Options...>;
-
-      const auto type = get_type();
-      if (type >= function_table::first_id && type <= function_table::last_id) {
-         for (auto&& id_and_fn : function_table::entries) {
-            if (type == id_and_fn.first) {
-               return id_and_fn.second(*this, std::forward<Args>(args)...);
-            }
-         }
-      }
-
-      throw invalid_function_call{
-         "No matching function for argument list"
-      };
-   }
 };
 
 }
