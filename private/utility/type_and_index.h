@@ -2,6 +2,7 @@
 
 #include <type_traits>
 
+#include "query_member_info.h"
 #include "typelist.h"
 
 namespace reflect {
@@ -33,7 +34,7 @@ struct type_and_index<
 
 template<typename Class, typename Type>
 using type_and_index_t = type_and_index<
-   0, Type,
+   0, member_info_t<Type>,
    typename class_reflection_info<Class>::member_map::Members
 >;
 

@@ -166,13 +166,5 @@ constexpr Class* class_instance_for(member<Class, MemberInfo>& reflected) noexce
    ))->instance;
 }
 
-template<typename ReflectedMemberType, typename Class>
-constexpr Class* class_instance_for(reflected_member<Class>& reflected) noexcept {
-   return static_cast<reflected_instance<Class>*>(
-      static_cast<typename class_reflection_info<Class>::member_map*>(
-         static_cast<member<Class, ReflectedMemberType>*>(std::addressof(reflected))
-   ))->instance;
-}
-
 }
 }

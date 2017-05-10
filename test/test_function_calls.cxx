@@ -1,4 +1,3 @@
-#pragma warning(disable: 4503)
 #include "../reflect.h"
 
 #include <Catch/catch.hpp>

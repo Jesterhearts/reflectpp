@@ -4,6 +4,7 @@
 
 #include "exceptions.h"
 #include "member.h"
+#include "reflected_member.h"
 #include "reflected_instance.h"
 
 #include "utility/type_and_index.h"
@@ -11,48 +12,30 @@
 
 namespace reflect {
 namespace detail {
-template<typename, typename, typename> struct member_typemap_impl;
+template<typename, typename> struct member_typemap_impl;
 
 template<typename Class, typename... Types>
-using member_typemap = member_typemap_impl<
-   Class,
-   typelist<Types...>,
-   std::index_sequence_for<Types...>
->;
+using member_typemap = member_typemap_impl<Class, typelist<Types...>>;
 
-template<
-   typename Class,
-   typename... members,
-   size_t... indexes>
-struct member_typemap_impl<
-   Class,
-   typelist<members...>,
-   std::integer_sequence<std::size_t, indexes...>
-> : reflected_instance<Class>, member<Class, members>...
+template<typename Class, typename... members>
+struct member_typemap_impl<Class, typelist<members...>>
+   : reflected_instance<Class>, member<Class, members>...
 {
-   using Members = typelist<members...>;
-   using Indexes = std::integer_sequence<std::size_t, indexes...>;
+   using Members       = typelist<members...>;
    using ReflectedType = reflected_member<Class>;
 
    using reflected_instance<Class>::reflected_instance;
 
-   ReflectedType& get_member(
-      const char* name,
-      size_t,
-      typelist<>) const
-   {
-      throw member_access_error{ std::string{"No member named: "} +name };
+   ReflectedType get_member(const char* name, size_t, typelist<>) const {
+      throw member_access_error{ std::string{"No member named: "} + name };
    }
 
-   ReflectedType& get_member(
-      const char* name,
-      typelist<>) const
-   {
-      throw member_access_error{ std::string{"No member named: "} +name };
+   ReflectedType get_member(const char* name, typelist<>) const {
+      throw member_access_error{ std::string{"No member named: "} + name };
    }
 
    template<typename Option, typename... Options>
-   ReflectedType& get_member(
+   ReflectedType get_member(
       const char* name,
       size_t len,
       typelist<Option, Options...>)
@@ -63,13 +46,11 @@ struct member_typemap_impl<
          return get_member(name, len, typelist<Options...>());
       }
 
-      return static_cast<ReflectedType&>(
-         static_cast<member<Class, Option>&>(*this)
-      );
+      return static_cast<member<Class, Option>&>(*this);
    }
 
    template<size_t Len, typename Option, typename... Options>
-   ReflectedType& get_member(
+   ReflectedType get_member(
       const char(&name)[Len],
       typelist<Option, Options...>)
    {
@@ -77,22 +58,20 @@ struct member_typemap_impl<
          return get_member(name, typelist<Options...>());
       }
 
-      return static_cast<ReflectedType&>(
-         static_cast<member<Class, Option>&>(*this)
-      );
+      return static_cast<member<Class, Option>&>(*this);
    }
 
    template<size_t Len>
-   ReflectedType& operator[](const char(&name)[Len]) {
+   ReflectedType operator[](const char(&name)[Len]) {
       return get_member(name, Members());
    }
 
    template<typename Type, std::enable_if_t<std::is_same_v<char, Type>>>
-   ReflectedType& operator[](const Type* name) {
+   ReflectedType operator[](const Type* name) {
       return get_member(name, std::strlen(name), Members());
    }
 
-   ReflectedType& operator[](const std::string& name) {
+   ReflectedType operator[](const std::string& name) {
       return get_member(name.c_str(), name.length(), Members());
    }
 
@@ -104,7 +83,9 @@ private:
       std::enable_if_t<Index != LLen, bool> = true,
       std::enable_if_t<LLen == RLen, bool> = true)
    {
-      return lhs[Index] == rhs[Index] ? equal_strings<Index + 1>(lhs, rhs) : false;
+      return lhs[Index] == rhs[Index]
+         ? equal_strings<Index + 1>(lhs, rhs)
+         : false;
    }
 
    template<size_t Index, size_t LLen, size_t RLen>

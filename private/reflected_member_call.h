@@ -4,11 +4,6 @@
 
 #include "exceptions.h"
 
-#include "macros/class_reflection_info.h"
-
-#include "utility/filter_types.h"
-#include "utility/implicitly_equal_types.h"
-
 namespace reflect {
 namespace detail {
 
