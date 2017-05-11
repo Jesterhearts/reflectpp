@@ -76,8 +76,18 @@ TEST_CASE("basic member assignment", "[reflection][assignment][basic]") {
       REQUIRE(f.string == "test");
    }
 
+   SECTION("object member assignment from compatible type with conversion") {
+      REQUIRE(f.string == std::string{});
+      REQUIRE_NOTHROW(reflected["string"] = double(10.0));
+      REQUIRE(f.string.size() == 1);
+      REQUIRE(f.string.front() == double(10.0));
+   }
+
    SECTION("object member assignment from incompatible type") {
-      REQUIRE_THROWS_AS(reflected["string"] = 10, const reflect::invalid_assignment_type&);
+      REQUIRE_THROWS_AS(
+         reflected["string"] = NonCopyable{},
+         const reflect::invalid_assignment_type&
+      );
    }
 
    SECTION("move only object member assignment") {
@@ -125,8 +135,18 @@ TEST_CASE("static member assignment", "[reflection][assignment][static]") {
       REQUIRE(Static::string == "test");
    }
 
+   SECTION("static object assignment from incompatible type with conversion") {
+      REQUIRE(Static::string == std::string{});
+      REQUIRE_NOTHROW(reflected["string"] = double(10.0));
+      REQUIRE(Static::string.size() == 1);
+      REQUIRE(Static::string.front() == double(10.0));
+   }
+
    SECTION("static object assignment from incompatible type") {
-      REQUIRE_THROWS_AS(reflected["string"] = 10, const reflect::invalid_assignment_type&);
+      REQUIRE_THROWS_AS(
+         reflected["string"] = NonCopyable{},
+         const reflect::invalid_assignment_type&
+      );
    }
 
    SECTION("static function assignment") {

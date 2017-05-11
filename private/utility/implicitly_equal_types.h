@@ -8,72 +8,81 @@
 namespace reflect {
 namespace detail {
 
-template<typename, typename, bool = true> struct implicitly_equal;
-
-template<typename From, typename To>
-constexpr bool implicitly_equal_v = implicitly_equal<
-   member_type_t<From>,
-   member_type_t<To>
->::value;
+template<typename, typename, bool = true> struct is_callable;
 
 template<typename Set1, typename Set2>
-struct implicitly_equal<Set1, Set2, false> : std::false_type {};
+struct is_callable<Set1, Set2, false> : std::false_type {};
 
 template<typename Item, typename... Set1>
-struct implicitly_equal<typelist<Item, Set1...>, typelist<>, true> : std::false_type {};
+struct is_callable<typelist<Item, Set1...>, typelist<>, true> : std::false_type {};
 
 template<typename Item, typename... Set2>
-struct implicitly_equal<typelist<>, typelist<Item, Set2...>, true> : std::false_type {};
+struct is_callable<typelist<>, typelist<Item, Set2...>, true> : std::false_type {};
 
 template<>
-struct implicitly_equal<typelist<>, typelist<>, true> : std::true_type {};
+struct is_callable<typelist<>, typelist<>, true> : std::true_type {};
 
-template<typename From, typename... Set1, typename To, typename... Set2>
-struct implicitly_equal<typelist<From, Set1...>, typelist<To, Set2...>, true>
-: implicitly_equal<
+template<
+   typename CalleeArg,
+   typename... Set1,
+   typename CallAsArg,
+   typename... Set2>
+struct is_callable<
+   typelist<CalleeArg, Set1...>,
+   typelist<CallAsArg, Set2...>,
+   true
+> : is_callable<
    typelist<Set1...>,
    typelist<Set2...>,
-   (std::is_convertible_v<From, To>
-      || std::is_constructible_v<To, From>)
-   && !(std::is_array_v<To> && std::is_pointer_v<From>)
+   std::is_convertible_v<CallAsArg, CalleeArg>
 >
 {};
 
-template<typename From, typename To>
-struct implicitly_equal<From, To> : implicitly_equal<
+template<typename CalleeArg, typename CallAsArg>
+struct is_callable<CalleeArg, CallAsArg> : is_callable<
    typelist<>,
    typelist<>,
-   (std::is_convertible_v<From, To>
-      || std::is_constructible_v<To, From>)
-   && !(std::is_array_v<To> && std::is_pointer_v<From>) >
+   std::is_convertible_v<CallAsArg, CalleeArg>
+>
 {};
 
 template<
-   typename FromReturnType,
-   typename... Args1,
-   typename ToReturnType,
-   typename... Args2>
-struct implicitly_equal<FromReturnType(Args1...), ToReturnType(Args2...), true>
-: implicitly_equal<
-   typelist<Args1...>,
-   typelist<Args2...>,
-   implicitly_equal_v<FromReturnType, ToReturnType>>
-{
-};
+   typename CalleeReturnType,
+   typename... CalleeArgs,
+   typename CallAsReturnType,
+   typename... CallAsArgs>
+struct is_callable<
+   CalleeReturnType(CalleeArgs...),
+   CallAsReturnType(CallAsArgs...),
+   true
+> : is_callable<
+   typelist<CalleeArgs...>,
+   typelist<CallAsArgs...>,
+   std::is_convertible_v<CalleeReturnType, CallAsReturnType>
+>
+{};
 
 template<
-   typename FromReturnType,
-   typename... Args1,
-   typename... Args2>
-struct implicitly_equal<FromReturnType(Args1...), void(Args2...), true>
-: implicitly_equal<
-   typelist<Args1...>,
-   typelist<Args2...>,
-   true>
-{
-};
+   typename CalleeReturnType,
+   typename... CalleeArgs,
+   typename... CallAsArgs>
+struct is_callable<CalleeReturnType(CalleeArgs...), void(CallAsArgs...), true>
+   : is_callable<
+      typelist<CalleeArgs...>,
+      typelist<CallAsArgs...>,
+      true
+   >
+{};
 
+template<typename Callee, typename CallAs>
+constexpr bool is_callable_v = is_callable<
+   member_type_t<Callee>,
+   member_type_t<CallAs>
+>::value;
 
+template<typename To, typename From>
+constexpr bool is_really_assignable_v = std::is_assignable_v<To, From>
+   || std::is_assignable_v<To&, From>;
 
 }
 }

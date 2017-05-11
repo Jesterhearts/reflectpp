@@ -11,75 +11,62 @@ namespace detail {
 
 template<
    typename ReturnType,
-   typename ReflectedMemberType,
+   typename MemberInfo,
    typename Class,
    typename... Args>
-std::enable_if_t<
-   !is_function_member_v<ReflectedMemberType>,
-   ReturnType
-> invoke_member(Class*, Args&&...) {
+std::enable_if_t<!is_function_member_v<MemberInfo>, ReturnType>
+invoke_member(Class*, Args&&...) {
    throw invalid_function_call{
       std::string{ "Cannot call non-function member" }
-      + member_key<ReflectedMemberType>()
+      + member_key<MemberInfo>()
    };
 }
 
 template<
    typename ReturnType,
-   typename ReflectedMemberType,
+   typename MemberInfo,
    typename Class,
    typename... Args>
 std::enable_if_t<
-   is_function_member_v<ReflectedMemberType>
-   && !implicitly_equal_v<
-      ReflectedMemberType,
-      ReturnType(Args&&...)
-   >,
+   !is_callable_v<MemberInfo, ReturnType(Args&&...)>
+   && is_function_member_v<MemberInfo>,
    ReturnType
 > invoke_member(Class*, Args&&...) {
    throw invalid_function_call{
       std::string{ "No matching function for argument list" }
-      + member_key<ReflectedMemberType>()
+      + member_key<MemberInfo>()
    };
 }
 
 template<
    typename ReturnType,
-   typename ReflectedMemberType,
+   typename MemberInfo,
    typename Class,
    typename... Args>
 std::enable_if_t<
-   is_function_member_v<ReflectedMemberType>
-   && is_static_member_v<ReflectedMemberType>
-   && implicitly_equal_v<
-      ReflectedMemberType,
-      ReturnType(Args&&...)
-   >,
+   is_static_member_v<MemberInfo>
+   && is_callable_v<MemberInfo, ReturnType(Args&&...)>
+   && is_function_member_v<MemberInfo>,
    ReturnType
 > invoke_member(Class*, Args&&... args) {
    return static_cast<ReturnType>(
-      (*get_member_ptr<ReflectedMemberType>())(std::forward<Args>(args)...)
+      (*get_member_ptr<MemberInfo>())(std::forward<Args>(args)...)
    );
 }
 
 template<
    typename ReturnType,
-   typename ReflectedMemberType,
+   typename MemberInfo,
    typename Class,
    typename... Args>
 std::enable_if_t<
-   is_function_member_v<ReflectedMemberType>
-   && !is_static_member_v<ReflectedMemberType>
-   && implicitly_equal_v<
-      ReflectedMemberType,
-      ReturnType(Args&&...)
-   >,
+   !is_static_member_v<MemberInfo>
+   && is_callable_v<MemberInfo, ReturnType(Args&&...)>
+   && is_function_member_v<MemberInfo>,
    ReturnType
 > invoke_member(Class* instance, Args&&... args) {
    if (instance) {
-      constexpr decltype(auto) member_ptr = get_member_ptr<
-         ReflectedMemberType
-      >();
+      constexpr decltype(auto) member_ptr = get_member_ptr<MemberInfo>();
 
       return static_cast<ReturnType>(
          (instance->*member_ptr)(std::forward<Args>(args)...)
@@ -88,7 +75,7 @@ std::enable_if_t<
 
    throw invalid_function_call{
       std::string{ "Cannot call non-static function: " }
-      + member_key<ReflectedMemberType>()
+      + member_key<MemberInfo>()
    };
 }
 
@@ -98,9 +85,9 @@ template<typename Class, typename ReturnType, typename... Args>
 struct invoke_member_generator<Class, ReturnType(Args...)> {
    using function_type = ReturnType(Class*, Args&&...);
 
-   template<typename MemberType>
+   template<typename MemberInfo>
    constexpr static function_type* create() noexcept {
-      return &invoke_member<ReturnType, MemberType, Class, Args...>;
+      return &invoke_member<ReturnType, MemberInfo, Class, Args...>;
    }
 };
 

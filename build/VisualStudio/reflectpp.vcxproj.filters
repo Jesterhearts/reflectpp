@@ -68,9 +68,6 @@
     <ClInclude Include="..\..\private\macros\member_names.h">
       <Filter>private\macros</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\private\utility\filter_types.h">
-      <Filter>private\utility</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\private\utility\implicitly_equal_types.h">
       <Filter>private\utility</Filter>
     </ClInclude>
