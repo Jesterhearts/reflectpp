@@ -162,7 +162,7 @@ TEST_CASE("basic function calls", "[reflection][functions][basic]") {
    SECTION("void() via invoke<int>") {
       REQUIRE_THROWS_AS(
          reflected["Void0"].invoke<int>(),
-         const reflect::invalid_function_call&
+         const reflect::invalid_function_arguments&
       );
       REQUIRE_FALSE(f.void0_called);
    }
@@ -170,7 +170,7 @@ TEST_CASE("basic function calls", "[reflection][functions][basic]") {
    SECTION("void() supplied arguments") {
       REQUIRE_THROWS_AS(
          reflected["Void0"](10),
-         const reflect::invalid_function_call&
+         const reflect::invalid_function_arguments&
       );
       REQUIRE_FALSE(f.void0_called);
    }
@@ -178,7 +178,7 @@ TEST_CASE("basic function calls", "[reflection][functions][basic]") {
    SECTION("void() via invoke<void> supplied arguments") {
       REQUIRE_THROWS_AS(
          reflected["Void0"].invoke<void>(10),
-         const reflect::invalid_function_call&
+         const reflect::invalid_function_arguments&
       );
       REQUIRE_FALSE(f.void0_called);
    }
@@ -186,7 +186,7 @@ TEST_CASE("basic function calls", "[reflection][functions][basic]") {
    SECTION("void() via invoke<int> supplied arguments") {
       REQUIRE_THROWS_AS(
          reflected["Void0"].invoke<int>(10),
-         const reflect::invalid_function_call&
+         const reflect::invalid_function_arguments&
       );
       REQUIRE_FALSE(f.void0_called);
    }
@@ -253,7 +253,7 @@ TEST_CASE(
    SECTION("int() call via invoke<string>") {
       REQUIRE_THROWS_AS(
          reflected["Int0"].invoke<std::string>(),
-         const reflect::invalid_function_call&
+         const reflect::invalid_function_arguments&
       );
       REQUIRE_FALSE(f.int0_called);
    }
@@ -291,7 +291,7 @@ TEST_CASE(
       double value;
       REQUIRE_THROWS_AS(
          value = reflected["String0"](),
-         const reflect::invalid_function_call&
+         const reflect::invalid_function_arguments&
       );
       REQUIRE_FALSE(f.string0_called);
    }
@@ -320,7 +320,7 @@ TEST_CASE(
       double value;
       REQUIRE_THROWS_AS(
          value = reflected["String0"].invoke<double>(),
-         const reflect::invalid_function_call&
+         const reflect::invalid_function_arguments&
       );
       REQUIRE_FALSE(f.string0_called);
    }
@@ -404,7 +404,7 @@ TEST_CASE(
    SECTION("void(int) call with incompatible type") {
       REQUIRE_THROWS_AS(
          reflected["Void1_Int"](std::string{}),
-         const reflect::invalid_function_call&
+         const reflect::invalid_function_arguments&
       );
    }
 
@@ -425,7 +425,7 @@ TEST_CASE(
    SECTION("int(int) call with incompatible type") {
       REQUIRE_THROWS_AS(
          reflected["Int1_Int"](std::string{}),
-         const reflect::invalid_function_call&
+         const reflect::invalid_function_arguments&
       );
    }
 
@@ -446,7 +446,7 @@ TEST_CASE(
    SECTION("void(int) called via invoke<void> with incompatible type") {
       REQUIRE_THROWS_AS(
          reflected["Void1_Int"].invoke<void>(std::string{}),
-         const reflect::invalid_function_call&
+         const reflect::invalid_function_arguments&
       );
    }
 
@@ -455,7 +455,7 @@ TEST_CASE(
       REQUIRE(f.value != value);
       REQUIRE_THROWS_AS(
          reflected["Void1_Int"].invoke<int>(value),
-         const reflect::invalid_function_call&
+         const reflect::invalid_function_arguments&
       );
       REQUIRE(f.value != value);
    }
@@ -482,7 +482,7 @@ TEST_CASE(
    SECTION("int(int) called via invoke<std::string>") {
       REQUIRE_THROWS_AS(
          reflected["Int1_Int"].invoke<std::string>(10),
-         const reflect::invalid_function_call&
+         const reflect::invalid_function_arguments&
       );
    }
 
@@ -514,7 +514,7 @@ TEST_CASE(
       REQUIRE(f.string_value.empty());
       REQUIRE_THROWS_AS(
          reflected["Void1_String"](10.0),
-         const reflect::invalid_function_call&
+         const reflect::invalid_function_arguments&
       );
       REQUIRE(f.string_value.empty());
       REQUIRE(value == f.string_value.data());
@@ -532,7 +532,7 @@ TEST_CASE(
       REQUIRE(f.string_value.empty());
       REQUIRE_THROWS_AS(
          reflected["Void1_StringRef"](10.0),
-         const reflect::invalid_function_call&
+         const reflect::invalid_function_arguments&
       );
       REQUIRE(f.string_value.empty());
       REQUIRE(value == f.string_value.data());
@@ -550,7 +550,7 @@ TEST_CASE(
       REQUIRE(f.string_value.empty());
       REQUIRE_THROWS_AS(
          reflected["Void1_ConstStringRef"](10.0),
-         const reflect::invalid_function_call&
+         const reflect::invalid_function_arguments&
       );
       REQUIRE(f.string_value.empty());
       REQUIRE(value == f.string_value.data());
@@ -569,7 +569,7 @@ TEST_CASE(
    SECTION("std::string(std::string) call with incompatible type") {
       REQUIRE_THROWS_AS(
          reflected["String1_String"](10.0),
-         const reflect::invalid_function_call&
+         const reflect::invalid_function_arguments&
       );
    }
 

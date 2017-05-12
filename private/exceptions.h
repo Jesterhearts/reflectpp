@@ -34,4 +34,19 @@ public:
    using member_access_error::member_access_error;
 };
 
+class invalid_function_arguments : public invalid_function_call {
+public:
+   using invalid_function_call::invalid_function_call;
+};
+
+class invalid_non_static_function_call : public invalid_function_call {
+public:
+   using invalid_function_call::invalid_function_call;
+};
+
+class invalid_call_to_non_callable_member : public invalid_function_call {
+public:
+   using invalid_function_call::invalid_function_call;
+};
+
 }

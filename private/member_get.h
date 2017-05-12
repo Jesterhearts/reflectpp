@@ -22,8 +22,8 @@ template<typename ReturnType, typename MemberInfo, typename Class>
 std::enable_if_t<
    !std::is_convertible_v<member_type_t<MemberInfo>, ReturnType>
    && !is_function_member_v<MemberInfo>,
-   ReturnType>
-get_member_ref(Class*) {
+   ReturnType
+> get_member_ref(Class*) {
    throw invalid_requested_member_type{
       std::string{ "Member type does not match requested type" }
       + member_key<MemberInfo>()

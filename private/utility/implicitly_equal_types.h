@@ -81,8 +81,10 @@ constexpr bool is_callable_v = is_callable<
 >::value;
 
 template<typename To, typename From>
-constexpr bool is_really_assignable_v = std::is_assignable_v<To, From>
-   || std::is_assignable_v<To&, From>;
+constexpr bool is_really_assignable_v = std::is_assignable_v<
+   std::add_lvalue_reference_t<To>,
+   From
+>;
 
 }
 }

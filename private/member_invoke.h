@@ -24,7 +24,7 @@ invoke_member(
    Class*,
    std::index_sequence<Indexes...>)
 {
-   throw invalid_function_call{
+   throw invalid_call_to_non_callable_member{
       std::string{ "Cannot call non-function member" }
       + member_key<MemberInfo>()
    };
@@ -45,7 +45,7 @@ std::enable_if_t<
    Class*,
    std::index_sequence<Indexes...>)
 {
-   throw invalid_function_call{
+   throw invalid_function_arguments{
       std::string{ "No matching function for argument list" }
       + member_key<MemberInfo>()
    };
@@ -97,7 +97,7 @@ std::enable_if_t<
       );
    }
 
-   throw invalid_function_call{
+   throw invalid_non_static_function_call{
       std::string{ "Cannot call non-static function: " }
       + member_key<MemberInfo>()
    };
