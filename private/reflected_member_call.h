@@ -16,13 +16,13 @@ struct reflected_member_call {
    template<typename ReturnType>
    operator ReturnType() {
       called = true;
-      return invoke<ReturnType>(std::index_sequence_for<Args>());
+      return fnptr.invoke<ReturnType>(std::move(params));
    }
 
    ~reflected_member_call() noexcept(false) {
       if (called) return;
       called = true;
-      invoke<void>(std::index_sequence_for<Args>());
+      fnptr.invoke<void>(std::move(params));
    }
 
 private:
@@ -41,13 +41,6 @@ private:
       called(false)
    {
       other.called = true;
-   }
-
-   template<typename ReturnType, std::size_t... ParamNum>
-   ReturnType invoke(std::integer_sequence<std::size_t, ParamNum...>) {
-      return fnptr.invoke<ReturnType>(
-         std::get<ParamNum>(std::move(params))...
-      );
    }
 
    reflected_member_call(const reflected_member_call&) = delete;

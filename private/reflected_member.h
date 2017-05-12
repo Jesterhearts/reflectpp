@@ -1,5 +1,7 @@
 #pragma once
 
+#include <tuple>
+#include <type_traits>
 #include <utility>
 
 #include "exceptions.h"
@@ -49,14 +51,22 @@ struct reflected_member {
 
    template<typename ReturnType, typename... Args>
    ReturnType invoke(Args&&... args) {
+      return invoke<ReturnType>(std::forward_as_tuple(
+         std::forward<Args>(args)...
+      ));
+   }
+
+   template<typename ReturnType, typename... Args>
+   ReturnType invoke(std::tuple<Args...>&& args) {
       using function_generator = invoke_member_generator<
-         Class, ReturnType(Args&&...)
+         Class, ReturnType(Args...), std::index_sequence_for<Args...>
       >;
       using function_table = function_table_t<function_generator, Class>;
 
       return function_table::functions[this_type](
+         std::move(args),
          class_instance,
-         std::forward<Args>(args)...
+         std::index_sequence_for<Args...>{}
       );
    }
 
@@ -84,7 +94,7 @@ struct reflected_member {
       return this_type;
    }
 
-protected:
+private:
    Class *const class_instance;
    const std::size_t this_type;
 };
