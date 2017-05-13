@@ -19,14 +19,24 @@ public:
    using member_access_error::member_access_error;
 };
 
+class invalid_assignment_to_const : public member_assignment_error {
+public:
+   using member_assignment_error::member_assignment_error;
+};
+
+class invalid_non_static_assignment : public member_assignment_error {
+public:
+   using member_assignment_error::member_assignment_error;
+};
+
 class invalid_assignment_type : public member_assignment_error {
 public:
    using member_assignment_error::member_assignment_error;
 };
 
-class invalid_assignment_to_const : public member_assignment_error {
+class invalid_assignment_to_function : public invalid_assignment_type {
 public:
-   using member_assignment_error::member_assignment_error;
+   using invalid_assignment_type::invalid_assignment_type;
 };
 
 class invalid_function_call : public member_access_error {

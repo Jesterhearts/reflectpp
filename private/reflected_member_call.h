@@ -3,41 +3,56 @@
 #include <tuple>
 
 #include "exceptions.h"
+#include "member_invoke.h"
 
 namespace reflect {
 namespace detail {
 
-template<typename Class, typename ReflectedType, typename... Args>
+template<typename Class, typename... Args>
 struct reflected_member_call {
-   std::tuple<Args...> params;
-   ReflectedType&      fnptr;
-   bool                called;
 
    template<typename ReturnType>
    operator ReturnType() {
       called = true;
-      return fnptr.invoke<ReturnType>(std::move(params));
+      return do_invoke<ReturnType>(
+         std::move(params),
+         class_instance,
+         this_type
+      );
    }
 
    ~reflected_member_call() noexcept(false) {
       if (called) return;
       called = true;
-      fnptr.invoke<void>(std::move(params));
+      do_invoke<void>(
+         std::move(params),
+         class_instance,
+         this_type
+      );
    }
 
 private:
    template<typename> friend struct reflected_member;
 
-   template<typename... _Args>
-   reflected_member_call(ReflectedType& fnptr, _Args&&... args) :
-      params{ std::forward<Args>(args)... },
-      fnptr(fnptr),
+   Class *const        class_instance;
+   const std::size_t   this_type;
+   std::tuple<Args...> params;
+   bool                called;
+
+   reflected_member_call(
+      Class* instance,
+      std::size_t type,
+      std::tuple<Args...>&& args
+   ) : class_instance{ instance },
+      this_type{ type },
+      params{ std::move(args) },
       called(false)
    {}
 
    reflected_member_call(reflected_member_call&& other) :
-      params(std::move(other.params)),
-      fnptr(other.fnptr),
+      class_instance{ other.instance },
+      this_type{ other.this_type },
+      params{ std::move(other.params) },
       called(false)
    {
       other.called = true;
@@ -48,33 +63,47 @@ private:
    reflected_member_call& operator=(reflected_member_call&&) = delete;
 };
 
-template<typename Class, typename ReflectedType>
-struct reflected_member_call<Class, ReflectedType> {
-   ReflectedType&      fnptr;
-   bool                called;
-
+template<typename Class>
+struct reflected_member_call<Class> {
    template<typename ReturnType>
    operator ReturnType() {
       called = true;
-      return fnptr.invoke<ReturnType>();
+      return do_invoke<ReturnType>(
+         std::tuple<>{},
+         class_instance,
+         this_type
+      );
    }
 
    ~reflected_member_call() noexcept(false) {
       if (called) return;
       called = true;
-      fnptr.invoke<void>();
+      do_invoke<void>(
+         std::tuple<>{},
+         class_instance,
+         this_type
+      );
    }
 
 private:
    template<typename> friend struct reflected_member;
 
-   reflected_member_call(ReflectedType& fnptr) :
-      fnptr(fnptr),
+   Class *const        class_instance;
+   const std::size_t   this_type;
+   bool                called;
+
+   reflected_member_call(
+      Class* instance,
+      std::size_t type,
+      std::tuple<>&&
+   ) : class_instance{ instance },
+      this_type{ type },
       called(false)
    {}
 
    reflected_member_call(reflected_member_call&& other) :
-      fnptr(other.fnptr),
+      class_instance{ other.class_instance },
+      this_type{ other.this_type },
       called(false)
    {
       other.called = true;

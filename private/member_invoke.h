@@ -127,5 +127,23 @@ struct invoke_member_generator<
    }
 };
 
+template<typename ReturnType, typename Class, typename... Args>
+ReturnType do_invoke(
+   std::tuple<Args...>&& args,
+   Class* class_instance,
+   std::size_t type)
+{
+   using function_generator = invoke_member_generator<
+      Class, ReturnType(Args...), std::index_sequence_for<Args...>
+   >;
+   using function_table = function_table_t<function_generator, Class>;
+
+   return function_table::functions[type](
+      std::move(args),
+      class_instance,
+      std::index_sequence_for<Args...>{}
+   );
+}
+
 }
 }

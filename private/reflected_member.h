@@ -2,7 +2,6 @@
 
 #include <tuple>
 #include <type_traits>
-#include <utility>
 
 #include "exceptions.h"
 #include "member_assign.h"
@@ -44,29 +43,20 @@ struct reflected_member {
    }
 
    template<typename... Args>
-   reflected_member_call<Class, ThisType, Args&&...>
-   operator()(Args&&... args) {
-      return{ *this, std::forward<Args>(args)... };
+   auto operator()(Args&&... args) {
+      return reflected_member_call<Class, Args&&...>{
+         class_instance,
+         this_type,
+         std::forward_as_tuple(std::forward<Args>(args)...)
+      };
    }
 
    template<typename ReturnType, typename... Args>
    ReturnType invoke(Args&&... args) {
-      return invoke<ReturnType>(std::forward_as_tuple(
-         std::forward<Args>(args)...
-      ));
-   }
-
-   template<typename ReturnType, typename... Args>
-   ReturnType invoke(std::tuple<Args...>&& args) {
-      using function_generator = invoke_member_generator<
-         Class, ReturnType(Args...), std::index_sequence_for<Args...>
-      >;
-      using function_table = function_table_t<function_generator, Class>;
-
-      return function_table::functions[this_type](
-         std::move(args),
+      return do_invoke<ReturnType>(
+         std::forward_as_tuple(std::forward<Args>(args)...),
          class_instance,
-         std::index_sequence_for<Args...>{}
+         this_type
       );
    }
 
@@ -85,8 +75,8 @@ struct reflected_member {
 
       const auto type = this_type;
       return function_table::functions[this_type](
-         class_instance,
-         std::forward<Type>(arg)
+         std::forward<Type>(arg),
+         class_instance
       );
    }
 
