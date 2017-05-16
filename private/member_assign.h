@@ -74,8 +74,8 @@ struct assign_member_generator {
    using function_type = void(Type&&, Class*);
 
    template<typename MemberInfo>
-   constexpr static function_type* create() noexcept {
-      return &assign_to_member<MemberInfo>;
+   constexpr static function_type& create() noexcept {
+      return assign_to_member<MemberInfo>;
    }
 };
 

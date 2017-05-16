@@ -103,38 +103,31 @@ std::enable_if_t<
    };
 }
 
-template<typename, typename, typename> struct invoke_member_generator;
+template<typename, typename> struct invoke_member_generator;
 
-template<
-   typename Class,
-   typename ReturnType,
-   typename... Args,
-   std::size_t... Indexes>
-struct invoke_member_generator<
-   Class,
-   ReturnType(Args...),
-   std::index_sequence<Indexes...>>
-{
+template<typename Class, typename ReturnType, typename... Args>
+struct invoke_member_generator<Class, ReturnType(Args...)> {
    using function_type = ReturnType(
       std::tuple<Args...>&&,
       Class*,
-      std::index_sequence<Indexes...>
+      std::index_sequence_for<Args...>
    );
 
    template<typename MemberInfo>
-   constexpr static function_type* create() noexcept {
-      return &invoke_member<ReturnType, MemberInfo>;
+   constexpr static function_type& create() noexcept {
+      return invoke_member<ReturnType, MemberInfo>;
    }
 };
 
 template<typename ReturnType, typename Class, typename... Args>
 ReturnType do_invoke(
+   std::size_t type,
    std::tuple<Args...>&& args,
-   Class* class_instance,
-   std::size_t type)
+   Class* class_instance)
 {
    using function_generator = invoke_member_generator<
-      Class, ReturnType(Args...), std::index_sequence_for<Args...>
+      Class,
+      ReturnType(Args...)
    >;
    using function_table = function_table_t<function_generator, Class>;
 

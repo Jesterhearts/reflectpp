@@ -18,8 +18,6 @@ template<typename> struct class_reflection_info;
 
 template<typename Class>
 struct reflected_member {
-   using ThisType = reflected_member<Class>;
-
    template<typename MemberType>
    constexpr reflected_member(MemberType& member)
       : this_type{ type_and_index_t<Class, MemberType>::index },
@@ -45,18 +43,18 @@ struct reflected_member {
    template<typename... Args>
    auto operator()(Args&&... args) {
       return reflected_member_call<Class, Args&&...>{
-         class_instance,
          this_type,
-         std::forward_as_tuple(std::forward<Args>(args)...)
+         std::forward_as_tuple(std::forward<Args>(args)...),
+         class_instance
       };
    }
 
    template<typename ReturnType, typename... Args>
    ReturnType invoke(Args&&... args) {
       return do_invoke<ReturnType>(
+         this_type,
          std::forward_as_tuple(std::forward<Args>(args)...),
-         class_instance,
-         this_type
+         class_instance
       );
    }
 

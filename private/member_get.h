@@ -64,8 +64,8 @@ struct get_member_ref_generator {
    using function_type = ReturnType(Class*);
 
    template<typename MemberInfo>
-   constexpr static function_type* create() noexcept {
-      return &get_member_ref<ReturnType, MemberInfo, Class>;
+   constexpr static function_type& create() noexcept {
+      return get_member_ref<ReturnType, MemberInfo>;
    }
 };
 

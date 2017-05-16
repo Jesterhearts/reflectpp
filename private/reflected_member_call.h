@@ -15,9 +15,9 @@ struct reflected_member_call {
    operator ReturnType() {
       called = true;
       return do_invoke<ReturnType>(
+         this_type,
          std::move(params),
-         class_instance,
-         this_type
+         class_instance
       );
    }
 
@@ -25,34 +25,34 @@ struct reflected_member_call {
       if (called) return;
       called = true;
       do_invoke<void>(
+         this_type,
          std::move(params),
-         class_instance,
-         this_type
+         class_instance
       );
    }
 
 private:
    template<typename> friend struct reflected_member;
 
-   Class *const        class_instance;
    const std::size_t   this_type;
    std::tuple<Args...> params;
+   Class *const        class_instance;
    bool                called;
 
-   reflected_member_call(
-      Class* instance,
+   constexpr reflected_member_call(
       std::size_t type,
-      std::tuple<Args...>&& args
-   ) : class_instance{ instance },
-      this_type{ type },
+      std::tuple<Args...>&& args,
+      Class* instance
+   ) : this_type{ type },
       params{ std::move(args) },
+      class_instance{ instance },
       called(false)
    {}
 
-   reflected_member_call(reflected_member_call&& other) :
-      class_instance{ other.instance },
+   constexpr reflected_member_call(reflected_member_call&& other) :
       this_type{ other.this_type },
       params{ std::move(other.params) },
+      class_instance{ other.instance },
       called(false)
    {
       other.called = true;
@@ -69,9 +69,9 @@ struct reflected_member_call<Class> {
    operator ReturnType() {
       called = true;
       return do_invoke<ReturnType>(
+         this_type,
          std::tuple<>{},
-         class_instance,
-         this_type
+         class_instance
       );
    }
 
@@ -79,29 +79,29 @@ struct reflected_member_call<Class> {
       if (called) return;
       called = true;
       do_invoke<void>(
+         this_type,
          std::tuple<>{},
-         class_instance,
-         this_type
+         class_instance
       );
    }
 
 private:
    template<typename> friend struct reflected_member;
 
-   Class *const        class_instance;
-   const std::size_t   this_type;
-   bool                called;
+   const std::size_t this_type;
+   Class *const      class_instance;
+   bool              called;
 
-   reflected_member_call(
-      Class* instance,
+   constexpr reflected_member_call(
       std::size_t type,
-      std::tuple<>&&
-   ) : class_instance{ instance },
-      this_type{ type },
+      std::tuple<>&&,
+      Class* instance
+   ) : this_type{ type },
+      class_instance{ instance },
       called(false)
    {}
 
-   reflected_member_call(reflected_member_call&& other) :
+   constexpr reflected_member_call(reflected_member_call&& other) :
       class_instance{ other.class_instance },
       this_type{ other.this_type },
       called(false)
