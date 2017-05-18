@@ -16,7 +16,7 @@ auto reflect(Class& instance) {
 
 template<typename Class>
 auto reflect() {
-   return detail::member_map<Class>{};
+   return detail::member_map<Class, /*is_null*/true>{};
 }
 
 }

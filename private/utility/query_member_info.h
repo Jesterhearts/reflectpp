@@ -6,7 +6,6 @@ namespace detail {
 
 template<typename MemberType, MemberType> struct member_info;
 template<typename> struct member_name;
-template<typename> struct reflected_member;
 
 template<typename ReflectedMemberType>
 constexpr decltype(auto) member_key() noexcept {

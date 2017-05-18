@@ -9,17 +9,23 @@
 #include "member_invoke.h"
 #include "reflected_member_call.h"
 
+#include "utility/class_instance_data.h"
 #include "utility/function_table.h"
 
 namespace reflect {
 namespace detail {
 
-template<typename Class>
+template<typename Class, bool is_null>
 struct reflected_member {
-   constexpr reflected_member(std::size_t type, Class* instance)
+   constexpr reflected_member(
+      std::size_t type,
+      class_instance_data<Class, is_null> instance) noexcept
       : this_type{ type },
-      class_instance{ instance }
+      instance{ instance }
    {}
+
+   template<typename = std::enable_if_t<is_null>>
+   constexpr reflected_member(std::size_t type) noexcept : this_type{ type } {}
 
    template<typename Type, typename = std::enable_if_t<!std::is_array_v<Type>>>
    operator Type() {
@@ -38,10 +44,10 @@ struct reflected_member {
 
    template<typename... Args>
    auto operator()(Args&&... args) {
-      return reflected_member_call<Class, Args&&...>{
+      return reflected_member_call<Class, is_null, Args&&...>{
          this_type,
          std::forward_as_tuple(std::forward<Args>(args)...),
-         class_instance
+         instance
       };
    }
 
@@ -50,27 +56,39 @@ struct reflected_member {
       return do_invoke<ReturnType>(
          this_type,
          std::forward_as_tuple(std::forward<Args>(args)...),
-         class_instance
+         instance
       );
    }
 
    template<typename Type>
    Type get() {
-      using function_generator = get_member_ref_generator<Class, Type>;
-      using function_table = function_table_t<function_generator, Class>;
+      using function_generator = get_member_ref_generator<
+         Class,
+         Type,
+         is_null
+      >;
+      using function_table = function_table_t<
+         function_generator,
+         Class,
+         is_null
+      >;
 
-      return function_table::functions[this_type](class_instance);
+      return function_table::functions[this_type](instance);
    }
 
    template<typename Type>
    void assign(Type&& arg) {
-      using function_generator = assign_member_generator<Class, Type>;
-      using function_table = function_table_t<function_generator, Class>;
+      using function_generator = assign_member_generator<Class, Type, is_null>;
+      using function_table = function_table_t<
+         function_generator,
+         Class,
+         is_null
+      >;
 
       const auto type = this_type;
       return function_table::functions[this_type](
          std::forward<Type>(arg),
-         class_instance
+         instance
       );
    }
 
@@ -79,8 +97,8 @@ struct reflected_member {
    }
 
 private:
-   Class *const class_instance;
-   const std::size_t this_type;
+   const std::size_t                   this_type;
+   class_instance_data<Class, is_null> instance;
 };
 
 }

@@ -77,5 +77,8 @@
     <ClInclude Include="..\..\private\member_invoke.h">
       <Filter>private</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\private\utility\class_instance_data.h">
+      <Filter>private\utility</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

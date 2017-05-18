@@ -143,6 +143,7 @@
     <ClInclude Include="..\..\private\member_typemap.h" />
     <ClInclude Include="..\..\private\reflected_member.h" />
     <ClInclude Include="..\..\private\reflected_member_call.h" />
+    <ClInclude Include="..\..\private\utility\class_instance_data.h" />
     <ClInclude Include="..\..\private\utility\function_table.h" />
     <ClInclude Include="..\..\private\utility\implicitly_equal_types.h" />
     <ClInclude Include="..\..\private\utility\query_member_info.h" />

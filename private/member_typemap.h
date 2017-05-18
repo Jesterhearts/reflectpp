@@ -11,14 +11,17 @@
 namespace reflect {
 namespace detail {
 
-template<typename Class>
+template<typename Class, bool is_null = false>
 struct member_map {
    using members        = member_list_t<Class>;
-   using reflected_type = reflected_member<Class>;
+   using reflected_type = reflected_member<Class, is_null>;
 
-   constexpr member_map() noexcept : instance{ nullptr } {}
+   template<typename = std::enable_if_t<is_null>>
+   constexpr member_map() noexcept {};
+
+   template<typename = std::enable_if_t<!is_null>>
    constexpr member_map(Class& instance) noexcept :
-      instance{ std::addressof(instance) }
+      instance{ instance }
    {}
 
    template<size_t Len>
@@ -36,7 +39,7 @@ struct member_map {
    }
 
 private:
-   Class* instance;
+   class_instance_data<Class, is_null> instance;
 
    template<std::size_t>
    reflected_type get_member(const char* name, size_t, typelist<>) const {

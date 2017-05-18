@@ -19,7 +19,10 @@ TEST_CASE("basic member read", "[reflection][read][basic]") {
 
       //TODO it should(?) be possible to do `test = reflected["string"]`
       // compilation currently fails
-      REQUIRE_NOTHROW([&]() { std::string test2 = reflected["string"]; test = test2; }());
+      REQUIRE_NOTHROW([&]() {
+         std::string test2 = reflected["string"];
+         test = test2;
+      }());
       REQUIRE(test == f.string);
    }
 
@@ -43,13 +46,19 @@ TEST_CASE("basic member read", "[reflection][read][basic]") {
       NonCopyable nc{ f.ncmem.m + 1 };
       REQUIRE(nc.m != f.ncmem.m);
 
-      REQUIRE_NOTHROW([&]() { NonCopyable nc2{ reflected["i"] }; nc = std::move(nc2); }());
+      REQUIRE_NOTHROW([&]() {
+         NonCopyable nc2{ reflected["i"] };
+         nc = std::move(nc2);
+      }());
       REQUIRE(nc.m == f.ncmem.m);
    }
 
    SECTION("member read to incompatible type") {
       int i;
-      REQUIRE_THROWS_AS(i = reflected["string"], const reflect::invalid_requested_member_type&);
+      REQUIRE_THROWS_AS(
+         i = reflected["string"],
+         const reflect::invalid_requested_member_type&
+      );
    }
 
 }
@@ -75,13 +84,19 @@ TEST_CASE("static member read", "[reflection][read][static]") {
 
       //TODO it should(?) be possible to do `value = reflected["string"]`
       // compilation currently fails
-      REQUIRE_NOTHROW([&]() { std::string value2 = reflected["string"]; value = value2; }());
+      REQUIRE_NOTHROW([&]() {
+         std::string value2 = reflected["string"];
+         value = value2; }()
+            );
       REQUIRE(value == Static::string);
    }
 
    SECTION("static object read to incompatible type") {
       int i;
-      REQUIRE_THROWS_AS(i = reflected["string"], const reflect::invalid_requested_member_type&);
+      REQUIRE_THROWS_AS(
+         i = reflected["string"],
+         const reflect::invalid_requested_member_type&
+      );
    }
 
 }
@@ -132,7 +147,10 @@ TEST_CASE("array and pointer member read", "[reflection][read][arrays]") {
       int(*value)[10] = nullptr;
       REQUIRE(value != &arrays.iarr10);
 
-      REQUIRE_NOTHROW([&]() { int(&value2)[10] = reflected["iarr10"]; value = &value2; }());
+      REQUIRE_NOTHROW([&]() {
+         int(&value2)[10] = reflected["iarr10"];
+         value = &value2;
+      }());
       REQUIRE(value == &arrays.iarr10);
    }
 
@@ -140,7 +158,10 @@ TEST_CASE("array and pointer member read", "[reflection][read][arrays]") {
       int(*value)[5] = nullptr;
       REQUIRE(value != &arrays.static5);
 
-      REQUIRE_NOTHROW([&]() { int(&value2)[5] = reflected["static5"]; value = &value2; }());
+      REQUIRE_NOTHROW([&]() {
+         int(&value2)[5] = reflected["static5"];
+         value = &value2;
+      }());
       REQUIRE(value == &arrays.static5);
    }
 
@@ -158,7 +179,10 @@ TEST_CASE("empty object member read", "[reflection][read][empty]") {
       auto reflected = reflect::reflect<Foo>();
 
       int value = 42;
-      REQUIRE_THROWS_AS(value = reflected["i"], const reflect::member_access_error&);
+      REQUIRE_THROWS_AS(
+         value = reflected["i"],
+         const reflect::member_access_error&
+      );
       REQUIRE(value == 42);
    }
 
@@ -186,7 +210,10 @@ TEST_CASE("empty object member read", "[reflection][read][empty]") {
       auto reflected = reflect::reflect<Static>();
 
       int value;
-      REQUIRE_THROWS_AS(value = reflected["string"], const reflect::member_access_error&);
+      REQUIRE_THROWS_AS(
+         value = reflected["string"],
+         const reflect::member_access_error&
+      );
    }
 
 }
