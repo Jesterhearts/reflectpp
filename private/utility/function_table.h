@@ -5,7 +5,7 @@
 namespace reflect {
 namespace detail {
 
-template<typename> struct class_reflection_info;
+template<typename> struct member_map;
 
 template<typename, typename, typename> struct function_table;
 
@@ -23,7 +23,7 @@ template<typename FunctionGenerator, typename Class>
 using function_table_t = function_table<
    FunctionGenerator,
    Class,
-   typename class_reflection_info<Class>::member_map::Members
+   typename member_map<Class>::Members
 >;
 
 }

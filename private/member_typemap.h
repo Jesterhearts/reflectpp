@@ -5,22 +5,19 @@
 #include "exceptions.h"
 #include "reflected_member.h"
 
+#include "macros/class_reflection_info.h"
 #include "utility/typelist.h"
 
 namespace reflect {
 namespace detail {
-template<typename, typename> struct member_typemap_impl;
 
-template<typename Class, typename... Types>
-using member_typemap = member_typemap_impl<Class, typelist<Types...>>;
-
-template<typename Class, typename... members>
-struct member_typemap_impl<Class, typelist<members...>> {
-   using Members       = typelist<members...>;
+template<typename Class>
+struct member_map {
+   using Members       = member_list_t<Class>;
    using ReflectedType = reflected_member<Class>;
 
-   constexpr member_typemap_impl() noexcept : instance{ nullptr } {}
-   constexpr member_typemap_impl(Class& instance) noexcept :
+   constexpr member_map() noexcept : instance{ nullptr } {}
+   constexpr member_map(Class& instance) noexcept :
       instance{ std::addressof(instance) }
    {}
 

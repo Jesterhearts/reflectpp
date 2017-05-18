@@ -14,8 +14,6 @@
 namespace reflect {
 namespace detail {
 
-template<typename> struct class_reflection_info;
-
 template<typename Class>
 struct reflected_member {
    constexpr reflected_member(std::size_t type, Class* instance)

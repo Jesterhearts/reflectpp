@@ -3,33 +3,27 @@
 #include "member_info.h"
 #include "member_names.h"
 
+#include "utility/typelist.h"
+
 namespace reflect {
 namespace detail {
 
-template<typename> struct class_reflection_info;
+template<typename> struct member_list;
 
-#define REFLECT_ENABLE(Class, ...)                    \
-   REFLECT_CREATE_KEYS(Class, __VA_ARGS__)            \
-                                                      \
-   namespace reflect {                                \
-   namespace detail {                                 \
-   template<>                                         \
-   struct class_reflection_info<Class> {              \
-      using member_map = member_typemap<              \
-         Class,                                       \
-         REFLECT_LIST_MEMBERS(Class, __VA_ARGS__)     \
-      >;                                              \
-                                                      \
-      static auto reflect(Class& instance) noexcept { \
-         return member_map{ instance };               \
-      }                                               \
-                                                      \
-      static auto reflect() noexcept {                \
-         return member_map{};                         \
-      }                                               \
-   };                                                 \
-   }                                                  \
+#define REFLECT_ENABLE(Class, ...)                                         \
+   REFLECT_CREATE_KEYS(Class, __VA_ARGS__)                                 \
+                                                                           \
+   namespace reflect {                                                     \
+   namespace detail {                                                      \
+   template<>                                                              \
+   struct member_list<Class> {                                             \
+      using members = typelist<REFLECT_LIST_MEMBERS(Class, __VA_ARGS__)>;  \
+   };                                                                      \
+   }                                                                       \
    }
+
+template<typename Class>
+using member_list_t = typename member_list<std::decay_t<Class>>::members;
 
 }
 }
