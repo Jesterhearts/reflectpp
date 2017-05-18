@@ -23,7 +23,7 @@ template<typename FunctionGenerator, typename Class>
 using function_table_t = function_table<
    FunctionGenerator,
    Class,
-   typename member_map<Class>::Members
+   typename member_map<Class>::members
 >;
 
 }

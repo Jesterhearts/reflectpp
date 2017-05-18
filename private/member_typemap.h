@@ -13,8 +13,8 @@ namespace detail {
 
 template<typename Class>
 struct member_map {
-   using Members       = member_list_t<Class>;
-   using ReflectedType = reflected_member<Class>;
+   using members        = member_list_t<Class>;
+   using reflected_type = reflected_member<Class>;
 
    constexpr member_map() noexcept : instance{ nullptr } {}
    constexpr member_map(Class& instance) noexcept :
@@ -22,34 +22,34 @@ struct member_map {
    {}
 
    template<size_t Len>
-   ReflectedType operator[](const char(&name)[Len]) {
-      return get_member(name, Members());
+   reflected_type operator[](const char(&name)[Len]) {
+      return get_member(name, members{});
    }
 
    template<typename Type, std::enable_if_t<std::is_same_v<char, Type>>>
-   ReflectedType operator[](const Type* name) {
-      return get_member(name, std::strlen(name), Members());
+   reflected_type operator[](const Type* name) {
+      return get_member(name, std::strlen(name), members{});
    }
 
-   ReflectedType operator[](const std::string& name) {
-      return get_member(name.c_str(), name.length(), Members());
+   reflected_type operator[](const std::string& name) {
+      return get_member(name.c_str(), name.length(), members{});
    }
 
 private:
    Class* instance;
 
    template<std::size_t>
-   ReflectedType get_member(const char* name, size_t, typelist<>) const {
+   reflected_type get_member(const char* name, size_t, typelist<>) const {
       throw member_access_error{ std::string{"No member named: "} + name };
    }
 
    template<std::size_t>
-   ReflectedType get_member(const char* name, typelist<>) const {
+   reflected_type get_member(const char* name, typelist<>) const {
       throw member_access_error{ std::string{"No member named: "} + name };
    }
 
    template<std::size_t index = 0, typename Option, typename... Options>
-   ReflectedType get_member(
+   reflected_type get_member(
       const char* name,
       size_t len,
       typelist<Option, Options...>)
@@ -68,7 +68,7 @@ private:
       std::size_t Len,
       typename Option,
       typename... Options>
-   ReflectedType get_member(
+   reflected_type get_member(
       const char(&name)[Len],
       typelist<Option, Options...>)
    {
@@ -86,9 +86,7 @@ private:
       std::enable_if_t<Index != LLen, bool> = true,
       std::enable_if_t<LLen == RLen, bool> = true)
    {
-      return lhs[Index] == rhs[Index]
-         ? equal_strings<Index + 1>(lhs, rhs)
-         : false;
+      return lhs[Index] == rhs[Index] && equal_strings<Index + 1>(lhs, rhs);
    }
 
    template<size_t Index, size_t LLen, size_t RLen>
