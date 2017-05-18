@@ -2,7 +2,6 @@
 
 #include <string>
 
-#include "member.h"
 #include "utility/implicitly_equal_types.h"
 #include "utility/query_member_info.h"
 

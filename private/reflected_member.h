@@ -18,12 +18,10 @@ template<typename> struct class_reflection_info;
 
 template<typename Class>
 struct reflected_member {
-   template<typename MemberType>
-   constexpr reflected_member(MemberType& member)
-      : this_type{ type_and_index_t<Class, MemberType>::index },
-      class_instance{ class_instance_for(member) }
-   {
-   }
+   constexpr reflected_member(std::size_t type, Class* instance)
+      : this_type{ type },
+      class_instance{ instance }
+   {}
 
    template<typename Type, typename = std::enable_if_t<!std::is_array_v<Type>>>
    operator Type() {
@@ -49,7 +47,7 @@ struct reflected_member {
       };
    }
 
-   template<typename ReturnType, typename... Args>
+   template<typename ReturnType = void, typename... Args>
    ReturnType invoke(Args&&... args) {
       return do_invoke<ReturnType>(
          this_type,

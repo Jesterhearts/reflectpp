@@ -1,6 +1,5 @@
 #pragma once
 
-#include "type_and_index.h"
 #include "typelist.h"
 
 namespace reflect {

@@ -4,37 +4,13 @@
 namespace reflect {
 namespace detail {
 
-template<typename, typename> struct member;
 template<typename MemberType, MemberType> struct member_info;
 template<typename> struct member_name;
 template<typename> struct reflected_member;
 
-template<typename Type>
-struct get_member_info {
-   using type = Type;
-
-};
-
-template<
-   typename MemberType,
-   MemberType Member>
-struct get_member_info<member_info<MemberType, Member>> {
-   using type = member_info<MemberType, Member>;
-};
-
-template<
-   typename Class,
-   typename MemberInfo>
-struct get_member_info<member<Class, MemberInfo>> {
-   using type = MemberInfo;
-};
-
-template<typename ReflectedMemberType>
-using member_info_t = typename get_member_info<ReflectedMemberType>::type;
-
 template<typename ReflectedMemberType>
 constexpr decltype(auto) member_key() noexcept {
-   return member_name<member_info_t<ReflectedMemberType>>::key();
+   return member_name<ReflectedMemberType>::key();
 }
 
 template<typename Type>
@@ -140,30 +116,20 @@ struct member_attributes<member_info<ReturnType(*)(Args...), MemberFn>> {
 };
 
 template<typename MemberInfo>
-constexpr bool is_function_member_v = member_attributes<member_info_t<MemberInfo>>::is_function;
+constexpr bool is_function_member_v = member_attributes<MemberInfo>::is_function;
 
 template<typename MemberInfo>
-constexpr bool is_static_member_v = member_attributes<member_info_t<MemberInfo>>::is_static;
+constexpr bool is_static_member_v = member_attributes<MemberInfo>::is_static;
 
 template<typename MemberInfo>
-constexpr bool is_const_member_v = member_attributes<member_info_t<MemberInfo>>::is_const;
+constexpr bool is_const_member_v = member_attributes<MemberInfo>::is_const;
 
 template<typename MemberInfo>
-using member_type_t = typename member_attributes<member_info_t<MemberInfo>>::type;
+using member_type_t = typename member_attributes<MemberInfo>::type;
 
 template<typename ReflectedMemberType>
 constexpr decltype(auto) get_member_ptr() {
-   return member_attributes<
-      member_info_t<ReflectedMemberType>
-   >::ptr();
-}
-
-template<typename Class, typename MemberInfo>
-constexpr Class* class_instance_for(member<Class, MemberInfo>& reflected) noexcept {
-   return static_cast<reflected_instance<Class>*>(
-      static_cast<typename class_reflection_info<Class>::member_map*>(
-         std::addressof(reflected)
-   ))->instance;
+   return member_attributes<ReflectedMemberType>::ptr();
 }
 
 }

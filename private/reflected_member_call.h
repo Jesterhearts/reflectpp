@@ -24,11 +24,7 @@ struct reflected_member_call {
    ~reflected_member_call() noexcept(false) {
       if (called) return;
       called = true;
-      do_invoke<void>(
-         this_type,
-         std::move(params),
-         class_instance
-      );
+      do_invoke(this_type, std::move(params), class_instance);
    }
 
 private:
@@ -78,11 +74,7 @@ struct reflected_member_call<Class> {
    ~reflected_member_call() noexcept(false) {
       if (called) return;
       called = true;
-      do_invoke<void>(
-         this_type,
-         std::tuple<>{},
-         class_instance
-      );
+      do_invoke(this_type, std::tuple<>{}, class_instance);
    }
 
 private:

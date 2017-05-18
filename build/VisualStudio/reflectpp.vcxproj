@@ -137,19 +137,16 @@
     <ClInclude Include="..\..\private\macros\class_reflection_info.h" />
     <ClInclude Include="..\..\private\macros\member_info.h" />
     <ClInclude Include="..\..\private\macros\member_names.h" />
-    <ClInclude Include="..\..\private\member.h" />
     <ClInclude Include="..\..\private\member_assign.h" />
     <ClInclude Include="..\..\private\member_get.h" />
     <ClInclude Include="..\..\private\member_invoke.h" />
     <ClInclude Include="..\..\private\member_typemap.h" />
-    <ClInclude Include="..\..\private\reflected_instance.h" />
     <ClInclude Include="..\..\private\reflected_member.h" />
     <ClInclude Include="..\..\private\reflected_member_call.h" />
     <ClInclude Include="..\..\private\utility\function_table.h" />
     <ClInclude Include="..\..\private\utility\implicitly_equal_types.h" />
     <ClInclude Include="..\..\private\utility\query_member_info.h" />
     <ClInclude Include="..\..\private\utility\typelist.h" />
-    <ClInclude Include="..\..\private\utility\type_and_index.h" />
     <ClInclude Include="..\..\test\testclasses.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

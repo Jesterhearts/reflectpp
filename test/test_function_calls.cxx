@@ -153,9 +153,9 @@ TEST_CASE("basic function calls", "[reflection][functions][basic]") {
       REQUIRE(f.void0_called);
    }
 
-   SECTION("void() via invoke<void>") {
+   SECTION("void() via invoke") {
       REQUIRE_FALSE(f.void0_called);
-      REQUIRE_NOTHROW(reflected["Void0"].invoke<void>());
+      REQUIRE_NOTHROW(reflected["Void0"].invoke());
       REQUIRE(f.void0_called);
    }
 
@@ -175,9 +175,9 @@ TEST_CASE("basic function calls", "[reflection][functions][basic]") {
       REQUIRE_FALSE(f.void0_called);
    }
 
-   SECTION("void() via invoke<void> supplied arguments") {
+   SECTION("void() via invoke supplied arguments") {
       REQUIRE_THROWS_AS(
-         reflected["Void0"].invoke<void>(10),
+         reflected["Void0"].invoke(10),
          const reflect::invalid_function_arguments&
       );
       REQUIRE_FALSE(f.void0_called);
@@ -236,9 +236,9 @@ TEST_CASE(
       REQUIRE(value == f.value);
    }
 
-   SECTION("int() call without value capture via invoke<void>") {
+   SECTION("int() call without value capture via invoke") {
       REQUIRE_FALSE(f.int0_called);
-      REQUIRE_NOTHROW(reflected["Int0"].invoke<void>());
+      REQUIRE_NOTHROW(reflected["Int0"].invoke());
       REQUIRE(f.int0_called);
    }
 
@@ -310,9 +310,9 @@ TEST_CASE(
       REQUIRE(value == f.string_value);
    }
 
-   SECTION("std::string() call without value capture via invoke<void>") {
+   SECTION("std::string() call without value capture via invoke") {
       REQUIRE_FALSE(f.string0_called);
-      REQUIRE_NOTHROW(reflected["String0"].invoke<void>());
+      REQUIRE_NOTHROW(reflected["String0"].invoke());
       REQUIRE(f.string0_called);
    }
 
@@ -429,23 +429,23 @@ TEST_CASE(
       );
    }
 
-   SECTION("void(int) called via invoke<void> with int") {
+   SECTION("void(int) called via invoke with int") {
       constexpr int value = 42;
       REQUIRE(f.value != value);
-      REQUIRE_NOTHROW(reflected["Void1_Int"].invoke<void>(value));
+      REQUIRE_NOTHROW(reflected["Void1_Int"].invoke(value));
       REQUIRE(f.value == value);
    }
 
-   SECTION("void(int) called via invoke<void> with compatible type") {
+   SECTION("void(int) called via invoke with compatible type") {
       constexpr double value = 42;
       REQUIRE(f.value != (int)value);
-      REQUIRE_NOTHROW(reflected["Void1_Int"].invoke<void>(value));
+      REQUIRE_NOTHROW(reflected["Void1_Int"].invoke(value));
       REQUIRE(f.value == (int)value);
    }
 
-   SECTION("void(int) called via invoke<void> with incompatible type") {
+   SECTION("void(int) called via invoke with incompatible type") {
       REQUIRE_THROWS_AS(
-         reflected["Void1_Int"].invoke<void>(std::string{}),
+         reflected["Void1_Int"].invoke(std::string{}),
          const reflect::invalid_function_arguments&
       );
    }
@@ -460,9 +460,9 @@ TEST_CASE(
       REQUIRE(f.value != value);
    }
 
-   SECTION("int(int) called via invoke<void> with int") {
+   SECTION("int(int) called via invoke with int") {
       constexpr int value = 42;
-      REQUIRE_NOTHROW(reflected["Int1_Int"].invoke<void>(value));
+      REQUIRE_NOTHROW(reflected["Int1_Int"].invoke(value));
    }
 
    SECTION("int(int) called via invoke<double> with int") {
@@ -571,6 +571,31 @@ TEST_CASE(
          reflected["String1_String"](10.0),
          const reflect::invalid_function_arguments&
       );
+   }
+
+   SECTION("void(std::string) call with std::string via invoke") {
+      const std::string test = "test";
+      REQUIRE(f.string_value != test);
+      REQUIRE_NOTHROW(reflected["Void1_String"].invoke(std::string{ test }));
+      REQUIRE(f.string_value == test);
+   }
+
+   SECTION("void(std::string) call with compatible type via invoke") {
+      const auto test = "test";
+      REQUIRE(f.string_value != test);
+      REQUIRE_NOTHROW(reflected["Void1_String"].invoke(test));
+      REQUIRE(f.string_value == test);
+   }
+
+   SECTION("void(std::string) call with incompatible type") {
+      const char *const value = f.string_value.data();
+      REQUIRE(f.string_value.empty());
+      REQUIRE_THROWS_AS(
+         reflected["Void1_String"].invoke(10.0),
+         const reflect::invalid_function_arguments&
+      );
+      REQUIRE(f.string_value.empty());
+      REQUIRE(value == f.string_value.data());
    }
 
 }

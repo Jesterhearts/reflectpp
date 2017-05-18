@@ -5,7 +5,6 @@
 #include <type_traits>
 #include <utility>
 
-#include "member.h"
 #include "utility/implicitly_equal_types.h"
 #include "utility/query_member_info.h"
 
@@ -119,7 +118,7 @@ struct invoke_member_generator<Class, ReturnType(Args...)> {
    }
 };
 
-template<typename ReturnType, typename Class, typename... Args>
+template<typename ReturnType = void, typename Class, typename... Args>
 ReturnType do_invoke(
    std::size_t type,
    std::tuple<Args...>&& args,

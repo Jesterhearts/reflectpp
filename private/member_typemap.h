@@ -3,11 +3,8 @@
 #include <cstring>
 
 #include "exceptions.h"
-#include "member.h"
 #include "reflected_member.h"
-#include "reflected_instance.h"
 
-#include "utility/type_and_index.h"
 #include "utility/typelist.h"
 
 namespace reflect {
@@ -18,48 +15,14 @@ template<typename Class, typename... Types>
 using member_typemap = member_typemap_impl<Class, typelist<Types...>>;
 
 template<typename Class, typename... members>
-struct member_typemap_impl<Class, typelist<members...>>
-   : reflected_instance<Class>, member<Class, members>...
-{
+struct member_typemap_impl<Class, typelist<members...>> {
    using Members       = typelist<members...>;
    using ReflectedType = reflected_member<Class>;
 
-   using reflected_instance<Class>::reflected_instance;
-
-   ReflectedType get_member(const char* name, size_t, typelist<>) const {
-      throw member_access_error{ std::string{"No member named: "} + name };
-   }
-
-   ReflectedType get_member(const char* name, typelist<>) const {
-      throw member_access_error{ std::string{"No member named: "} + name };
-   }
-
-   template<typename Option, typename... Options>
-   ReflectedType get_member(
-      const char* name,
-      size_t len,
-      typelist<Option, Options...>)
-   {
-      const auto& key = member_name<Option>::key();
-      constexpr auto KeyLen = (sizeof(member_name<Option>::key()) - 1);
-      if (len != KeyLen || std::strncmp(key, name, KeyLen) != 0) {
-         return get_member(name, len, typelist<Options...>());
-      }
-
-      return static_cast<member<Class, Option>&>(*this);
-   }
-
-   template<size_t Len, typename Option, typename... Options>
-   ReflectedType get_member(
-      const char(&name)[Len],
-      typelist<Option, Options...>)
-   {
-      if (!equal_strings(member_name<Option>::key(), name)) {
-         return get_member(name, typelist<Options...>());
-      }
-
-      return static_cast<member<Class, Option>&>(*this);
-   }
+   constexpr member_typemap_impl() noexcept : instance{ nullptr } {}
+   constexpr member_typemap_impl(Class& instance) noexcept :
+      instance{ std::addressof(instance) }
+   {}
 
    template<size_t Len>
    ReflectedType operator[](const char(&name)[Len]) {
@@ -76,6 +39,49 @@ struct member_typemap_impl<Class, typelist<members...>>
    }
 
 private:
+   Class* instance;
+
+   template<std::size_t>
+   ReflectedType get_member(const char* name, size_t, typelist<>) const {
+      throw member_access_error{ std::string{"No member named: "} + name };
+   }
+
+   template<std::size_t>
+   ReflectedType get_member(const char* name, typelist<>) const {
+      throw member_access_error{ std::string{"No member named: "} + name };
+   }
+
+   template<std::size_t index = 0, typename Option, typename... Options>
+   ReflectedType get_member(
+      const char* name,
+      size_t len,
+      typelist<Option, Options...>)
+   {
+      const auto& key = member_name<Option>::key();
+      constexpr auto KeyLen = (sizeof(member_name<Option>::key()) - 1);
+      if (len != KeyLen || std::strncmp(key, name, KeyLen) != 0) {
+         return get_member<index + 1>(name, len, typelist<Options...>());
+      }
+
+      return{ index, instance };
+   }
+
+   template<
+      std::size_t index = 0,
+      std::size_t Len,
+      typename Option,
+      typename... Options>
+   ReflectedType get_member(
+      const char(&name)[Len],
+      typelist<Option, Options...>)
+   {
+      if (!equal_strings(member_name<Option>::key(), name)) {
+         return get_member<index + 1>(name, typelist<Options...>());
+      }
+
+      return{ index, instance };
+   }
+
    template<size_t Index = 0, size_t LLen = 0, size_t RLen = 0>
    static constexpr bool equal_strings(
       const char(&lhs)[LLen],

@@ -38,9 +38,6 @@
     <ClInclude Include="..\..\private\exceptions.h">
       <Filter>private</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\private\member.h">
-      <Filter>private</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\private\member_assign.h">
       <Filter>private</Filter>
     </ClInclude>
@@ -48,9 +45,6 @@
       <Filter>private</Filter>
     </ClInclude>
     <ClInclude Include="..\..\private\member_typemap.h">
-      <Filter>private</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\private\reflected_instance.h">
       <Filter>private</Filter>
     </ClInclude>
     <ClInclude Include="..\..\private\reflected_member.h">
@@ -72,9 +66,6 @@
       <Filter>private\utility</Filter>
     </ClInclude>
     <ClInclude Include="..\..\private\utility\query_member_info.h">
-      <Filter>private\utility</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\private\utility\type_and_index.h">
       <Filter>private\utility</Filter>
     </ClInclude>
     <ClInclude Include="..\..\private\utility\typelist.h">
